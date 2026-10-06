@@ -26,6 +26,7 @@ export function createNewGame({ seed, wallMs, guildName }: NewGameOptions): Game
     itemInstances: {},
     stash: {},
     materials: {},
+    seenMonsters: [],
     log: [],
     nextLogId: 1,
   };

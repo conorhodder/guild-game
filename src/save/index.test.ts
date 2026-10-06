@@ -31,6 +31,7 @@ function expectCurrentShape(state: GameState) {
       'nextId',
       'nextLogId',
       'rng',
+      'seenMonsters',
       'stash',
     ].sort(),
   );
@@ -61,6 +62,13 @@ describe('save format', () => {
     expect(state.materials).toEqual({});
     expect(state.itemInstances).toEqual({});
     expect(Object.keys(state.heroes)).toHaveLength(3);
+  });
+
+  it('migrates the v3 fixture with an empty seen-monster list', () => {
+    const fixture = fixtureFiles['./fixtures/v3.json'];
+    const state = loadEnvelope(JSON.stringify(fixture));
+
+    expect(state.seenMonsters).toEqual([]);
   });
 
   it('round-trips JSON and UTF-8 base64 saves', () => {
@@ -94,6 +102,8 @@ describe('save format', () => {
       false,
     );
     expect(isGameState({ ...state, materials: { 'copper-ore': 0 } })).toBe(false);
+    expect(isGameState({ ...state, seenMonsters: [1] })).toBe(false);
+    expect(isGameState({ ...state, seenMonsters: ['unknown-monster'] })).toBe(false);
   });
 
   it('rejects garbage without changing the existing state', () => {

@@ -101,6 +101,7 @@ export interface GameState {
   itemInstances: Record<string, ItemInstance>;
   stash: Record<string, ItemInstance>;
   materials: Record<string, number>;
+  seenMonsters: string[];
   log: LogLine[];
   nextLogId: number;
 }

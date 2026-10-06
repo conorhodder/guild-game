@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { equip, foundGuild, sell, sellMaterial, unequip } from './game/actions';
 import { SettingsPanel } from './ui/SettingsPanel';
 import { FoundGuildForm } from './ui/FoundGuildForm';
+import { LogPanel } from './ui/LogPanel';
 import { RosterPanel } from './ui/RosterPanel';
 import { StashPanel } from './ui/StashPanel';
 import { Tabs } from './ui/Tabs';
@@ -21,6 +23,7 @@ function formatSimClock(simMs: number): string {
 export default function App() {
   const game = useGame();
   const saveNotice = useSaveNotice();
+  const [logChannel, setLogChannel] = useState('all');
 
   if (!game) {
     return (
@@ -88,6 +91,17 @@ export default function App() {
                 onSellMaterial={(itemId, quantity) =>
                   gameStore.dispatch(sellMaterial(itemId, quantity))
                 }
+              />
+            ),
+          },
+          {
+            id: 'log',
+            label: 'Log',
+            panel: (
+              <LogPanel
+                game={game}
+                onChannelChange={setLogChannel}
+                selectedChannel={logChannel}
               />
             ),
           },

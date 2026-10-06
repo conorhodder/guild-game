@@ -23,7 +23,10 @@ describe('item data', () => {
       Object.values(starterGear).flatMap((gear) => Object.values(gear)),
     );
     const additionalGear = items.filter(
-      (item) => item.slot !== 'material' && !starterIds.has(item.id),
+      (item) =>
+        item.slot !== 'material' &&
+        !starterIds.has(item.id) &&
+        (item.rarity === 'common' || item.rarity === 'uncommon'),
     );
 
     for (const classId of validClasses) {

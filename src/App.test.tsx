@@ -21,6 +21,7 @@ describe('App', () => {
     expect(screen.getByRole('tablist', { name: 'Game sections' })).toBeDefined();
     expect(screen.getByRole('tab', { name: 'Roster', selected: true })).toBeDefined();
     expect(screen.getByRole('tab', { name: 'Stash' })).toBeDefined();
+    expect(screen.getByRole('tab', { name: 'Log' })).toBeDefined();
     expect(screen.getByRole('tab', { name: 'Settings' })).toBeDefined();
     expect(screen.getByText('The Wayfarers')).toBeDefined();
     expect(screen.getByRole('button', { name: /Warrior.*Level 1/ })).toBeDefined();

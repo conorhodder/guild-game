@@ -73,6 +73,8 @@ src/
   migration.** It also adds a fixture `src/save/fixtures/v{N}.json`, captured
   from the previous version before the change. A test loads every fixture and
   asserts it migrates to a valid current state (G-1).
+- Released item, monster, quest, and zone IDs are save-format contracts: never
+  rename or remove them; add new IDs instead.
 - Autosave: the store saves at least every 30 s and immediately after every
   dispatched action.
 - Export: the envelope JSON, UTF-8, base64-encoded, shown in a textarea with a

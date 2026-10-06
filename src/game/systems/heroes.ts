@@ -105,7 +105,13 @@ export function heroStats(hero: Hero, state: GameState): HeroStats {
   return result;
 }
 
-export function grantXp(state: GameState, heroId: string, amount: number, events: SimEvent[]): void {
+export function grantXp(
+  state: GameState,
+  heroId: string,
+  amount: number,
+  events: SimEvent[],
+  simMs: number = state.clock.simMs,
+): void {
   if (!Number.isFinite(amount) || amount < 0) throw new RangeError('XP must be a non-negative finite number.');
   const hero = state.heroes[heroId];
   if (!hero) return;
@@ -126,6 +132,7 @@ export function grantXp(state: GameState, heroId: string, amount: number, events
       'system',
       `${hero.name} has gained a level! Welcome to level ${hero.level}!`,
       true,
+      simMs,
     );
     events.push({ type: 'log', line });
   }

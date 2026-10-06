@@ -1,4 +1,5 @@
 import { itemsById } from '../game/data/items';
+import { monstersById } from '../game/data/monsters';
 import type {
   Activity,
   ClassId,
@@ -11,7 +12,7 @@ import type {
 } from '../game/types';
 
 export const SAVE_KEY = 'guildmasters-ledger.save';
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 export interface SaveEnvelope {
   format: 'tgl-save';
@@ -39,6 +40,13 @@ export const migrations: Record<number, Migration> = {
       itemInstances: state.itemInstances ?? {},
       stash: state.stash ?? {},
       materials: state.materials ?? {},
+    };
+  },
+  3: (state) => {
+    if (!isRecord(state)) return state;
+    return {
+      ...state,
+      seenMonsters: state.seenMonsters ?? [],
     };
   },
 };
@@ -179,7 +187,8 @@ export function isGameState(value: unknown): value is GameState {
     !isRecord(value) ||
     !isRecord(value.clock) ||
     !isRecord(value.itemInstances) ||
-    !isRecord(value.stash)
+    !isRecord(value.stash) ||
+    !Array.isArray(value.seenMonsters)
   ) {
     return false;
   }
@@ -244,6 +253,9 @@ export function isGameState(value: unknown): value is GameState {
         typeof quantity === 'number' &&
         Number.isInteger(quantity) &&
         quantity > 0,
+    ) &&
+    value.seenMonsters.every(
+      (monsterId) => typeof monsterId === 'string' && Boolean(monstersById[monsterId]),
     ) &&
     Array.isArray(value.log) &&
     value.log.every(isLogLine) &&

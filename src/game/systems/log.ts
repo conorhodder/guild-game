@@ -9,10 +9,11 @@ export function appendLog(
   category: LogCategory,
   text: string,
   highlight?: boolean,
+  simMs: number = state.clock.simMs,
 ): LogLine {
   const line: LogLine = {
     id: state.nextLogId,
-    simMs: state.clock.simMs,
+    simMs,
     channel,
     category,
     text,
