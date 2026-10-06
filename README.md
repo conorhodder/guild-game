@@ -10,6 +10,7 @@ and is currently at the **Frame** stage. Only the app shell exists so far, with 
 - **[Product Requirements Document (PRD-001)](docs/prd.md)**: the problem,
   audience, core loop, acceptance and success criteria, scope and resolved
   decisions.
+- Living specification: [docs/spec.md](docs/spec.md)
 - **[Proposed technical features](docs/features.md)**: the thin, ordered
   slices that would deliver the MVP, one PR each.
 
