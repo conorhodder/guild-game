@@ -43,8 +43,9 @@ src/
   tested.
 - `syncToWall(state, nowWall)` in `clock.ts`:
   - `delta = nowWall - state.clock.lastWallMs`
-  - if `delta <= 0`: set `lastWallMs = nowWall` and grant no progress
-    (backward clock).
+  - if `delta <= 0`: grant no progress and leave `lastWallMs` unchanged (a
+    high-water mark), so winding the clock back and forward again never
+    re-grants time.
   - else: `credit = min(delta, OFFLINE_CAP_MS)` with
     `OFFLINE_CAP_MS = 12 * 3600 * 1000`, then `advance(state, simMs + credit)`
     and set `lastWallMs = nowWall`.

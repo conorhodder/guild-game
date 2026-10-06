@@ -36,14 +36,40 @@ describe('simulation clock', () => {
     expect(chunked.nextId).toBe(2);
   });
 
-  it('grants no progress for a backward wall clock', () => {
+  it('keeps the wall-clock high-water mark when the clock moves backward', () => {
     const start = createNewGame({ seed: 3, wallMs: 10_000, guildName: '' });
     const result = syncToWall(start, 5_000);
 
     expect(result.credited).toBe(0);
     expect(result.state.clock.simMs).toBe(0);
-    expect(result.state.clock.lastWallMs).toBe(5_000);
+    expect(result.state.clock.lastWallMs).toBe(10_000);
     expect(result.state.rng).toBe(start.rng);
+  });
+
+  it('does not re-credit elapsed time after the clock returns to its high-water mark', () => {
+    const start = createNewGame({ seed: 3, wallMs: 12 * 60 * 60 * 1000, guildName: '' });
+    const movedBackward = syncToWall(start, 0);
+    const returnedToHighWater = syncToWall(movedBackward.state, start.clock.lastWallMs);
+    const pastHighWater = syncToWall(
+      returnedToHighWater.state,
+      start.clock.lastWallMs + 6 * 60 * 60 * 1000,
+    );
+
+    expect(movedBackward.credited).toBe(0);
+    expect(returnedToHighWater.credited).toBe(0);
+    expect(returnedToHighWater.state.clock.lastWallMs).toBe(start.clock.lastWallMs);
+    expect(pastHighWater.credited).toBe(6 * 60 * 60 * 1000);
+    expect(pastHighWater.state.clock.simMs).toBe(6 * 60 * 60 * 1000);
+  });
+
+  it('caps only time beyond the high-water mark after a backward-clock jump', () => {
+    const start = createNewGame({ seed: 3, wallMs: 12 * 60 * 60 * 1000, guildName: '' });
+    const movedBackward = syncToWall(start, 0);
+    const pastHighWater = syncToWall(movedBackward.state, start.clock.lastWallMs + 48 * 60 * 60 * 1000);
+
+    expect(pastHighWater.credited).toBe(OFFLINE_CAP_MS);
+    expect(pastHighWater.state.clock.simMs).toBe(OFFLINE_CAP_MS);
+    expect(pastHighWater.state.clock.lastWallMs).toBe(start.clock.lastWallMs + 48 * 60 * 60 * 1000);
   });
 
   it('caps a 48-hour wall-clock jump at 12 hours', () => {

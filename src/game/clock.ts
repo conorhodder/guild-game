@@ -18,9 +18,7 @@ export function syncToWall(
 
   const delta = nowWall - state.clock.lastWallMs;
   if (delta <= 0) {
-    const nextState = structuredClone(state);
-    nextState.clock.lastWallMs = nowWall;
-    return { state: nextState, credited: 0, events: [] };
+    return { state: structuredClone(state), credited: 0, events: [] };
   }
 
   const credited = Math.min(delta, OFFLINE_CAP_MS);
