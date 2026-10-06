@@ -2,13 +2,24 @@ import { itemsById, starterGear } from './data/items';
 import { campsById, zonesById } from './data/zones';
 import { createItemInstance } from './itemIds';
 import { rngPick } from './rng';
-import type { GameState, Hero, ItemData, ItemInstance, Slot } from './types';
+import type {
+  GameState,
+  GatherSkill,
+  Hero,
+  ItemData,
+  ItemInstance,
+  Slot,
+} from './types';
 import { appendLog } from './systems/log';
 import { createHero, heroStatus } from './systems/heroes';
 import { questsById } from './data/quests';
 import { encounterTime } from './questSchedule';
-import { campChannel, questChannel } from './activityChannels';
+import { campChannel, gatherChannel, questChannel } from './activityChannels';
 import { rollNamedSpawn } from './systems/camps';
+import {
+  bestGatheringMaterial,
+  gatheringIntervalMs,
+} from './systems/gathering';
 import {
   hireCost,
   replaceRecruitmentCandidate,
@@ -430,6 +441,62 @@ export function rest(heroId: string): GameAction {
   };
 }
 
+export function getGatherReason(
+  state: GameState,
+  heroId: string,
+  skill: GatherSkill,
+): string | null {
+  if (skill !== 'mining' && skill !== 'herbalism') {
+    return 'Choose Mining or Herbalism.';
+  }
+  const hero = state.heroes[heroId];
+  if (!hero) return 'Hero not found.';
+  if (heroStatus(hero, state) !== 'Idle') return 'Hero must be Idle.';
+  if (hero.fatigue >= 100) return 'Fatigue must be below 100.';
+  if (!bestGatheringMaterial(skill, hero.gather[skill])) {
+    return `${skill === 'mining' ? 'Mining' : 'Herbalism'} skill is too low.`;
+  }
+  return null;
+}
+
+export function startGather(heroId: string, skill: GatherSkill): GameAction {
+  return (currentState) => {
+    const reason = getGatherReason(currentState, heroId, skill);
+    if (reason) return { state: currentState, reason };
+
+    const state = structuredClone(currentState);
+    const hero = state.heroes[heroId];
+    if (!hero) return { state: currentState, reason: 'Hero not found.' };
+    const intervalMs = gatheringIntervalMs(skill, hero.gather[skill]);
+    if (intervalMs === null) {
+      return { state: currentState, reason: 'No materials are available for that skill.' };
+    }
+
+    const id = `a${state.nextId}`;
+    state.nextId += 1;
+    const startedAt = state.clock.simMs;
+    state.activities[id] = {
+      kind: 'gather',
+      id,
+      heroId,
+      skill,
+      startedAt,
+      nextYieldAt: Math.ceil((startedAt + intervalMs) / TICK_MS) * TICK_MS,
+      yields: 0,
+    };
+    hero.activityId = id;
+    appendLog(
+      state,
+      gatherChannel(hero.id),
+      'system',
+      `${hero.name} has started ${skill === 'mining' ? 'Mining' : 'Herbalism'}.`,
+      undefined,
+      startedAt,
+    );
+    return { state };
+  };
+}
+
 export function recall(activityId: string): GameAction {
   return (currentState) => {
     const activity = currentState.activities[activityId];
@@ -444,6 +511,25 @@ export function recall(activityId: string): GameAction {
         return { state: currentState, reason: 'Activity not found.' };
       }
       camp.recallAt = Math.floor(state.clock.simMs / TICK_MS + 1) * TICK_MS;
+      return { state };
+    }
+    if (activity.kind === 'gather') {
+      const state = structuredClone(currentState);
+      const nextActivity = state.activities[activityId];
+      if (!nextActivity || nextActivity.kind !== 'gather') {
+        return { state: currentState, reason: 'Activity not found.' };
+      }
+      const hero = state.heroes[nextActivity.heroId];
+      if (hero?.activityId === activityId) {
+        hero.activityId = null;
+        appendLog(
+          state,
+          gatherChannel(hero.id),
+          'system',
+          `${hero.name} has stopped gathering.`,
+        );
+      }
+      delete state.activities[activityId];
       return { state };
     }
     if (activity.kind !== 'rest') {

@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { questChannel } from '../game/activityChannels';
+import { gatherChannel, questChannel } from '../game/activityChannels';
 import type { GameState, LogCategory } from '../game/types';
 import { formatLogTimestamp } from './formatSimTime';
 
@@ -22,7 +22,7 @@ function activityChannel(game: GameState, activityId: string): string | null {
   if (!activity) return null;
   if (activity.kind === 'quest') return questChannel(activity.id, activity.questId);
   if (activity.kind === 'camp') return `camp:${activity.id}`;
-  if (activity.kind === 'gather') return `gather:${activity.id}`;
+  if (activity.kind === 'gather') return gatherChannel(activity.heroId);
   return `rest:${activity.id}`;
 }
 

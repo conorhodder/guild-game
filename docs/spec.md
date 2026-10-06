@@ -109,7 +109,7 @@ interface ItemInstance { uid: string; itemId: string }
 type Activity =
   | { kind: 'quest'; id: string; questId: string; heroIds: string[]; startedAt: number; endsAt: number; nextEncounterAt: number; encountersLeft: number }
   | { kind: 'camp'; id: string; zoneId: string; campId: string; heroIds: string[]; startedAt: number; spawnReadyAt: number; nextSpawnNamed: boolean }
-  | { kind: 'gather'; id: string; heroId: string; skill: GatherSkill; startedAt: number; nextYieldAt: number }
+  | { kind: 'gather'; id: string; heroId: string; skill: GatherSkill; startedAt: number; nextYieldAt: number; yields: number }
   | { kind: 'rest'; id: string; heroId: string; startedAt: number };
 interface LogLine { id: number; simMs: number; channel: string; category: LogCategory; text: string; highlight?: boolean }
 
@@ -275,11 +275,13 @@ returns their equipped gear to the stash.
 
 ### Gathering (TF-13, AC-8)
 
-A gathering job takes one *Idle* hero. Every 60 sim seconds it yields a
-material with chance `0.4 + skill/200` (capped at 0.95). The material is chosen
-from the materials whose `levelReq <= skill`, weighted towards the highest
-tier. Each attempt can raise the skill (same formula as combat skills, with the
-gathering cap). Materials stack in `materials` and can be sold.
+A gathering job takes one *Idle* hero with fatigue below 100. Mining and
+Herbalism each have three material tiers with increasing value and skill
+requirements. Every `max(20, 60 - value/2)` seconds, the hero gathers one unit
+of the best tier their skill allows, with a 10% chance to gather the tier
+below. Each yield can raise the skill using `trySkillUp` and the gathering
+cap. Materials stack in `materials` and can be sold. Gathering stops at
+fatigue 100; its activity tracks the total yield count.
 
 ### Offline and "While you were away" (TF-14, AC-13, AC-14, G-4, G-5, J2)
 

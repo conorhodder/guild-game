@@ -45,4 +45,26 @@ describe('item data', () => {
       ),
     ).toBe(true);
   });
+
+  it('defines three increasingly valuable and demanding materials for each gathering skill', () => {
+    for (const skill of ['mining', 'herbalism'] as const) {
+      const materials = items
+        .filter((item) => item.slot === 'material' && item.gatherSkill === skill)
+        .sort((first, second) => first.levelReq - second.levelReq);
+
+      expect(materials).toHaveLength(3);
+      for (let index = 1; index < materials.length; index += 1) {
+        const previous = materials[index - 1];
+        const current = materials[index];
+        if (!previous || !current) throw new Error('Expected three material tiers.');
+        expect(current.levelReq).toBeGreaterThan(previous.levelReq);
+        expect(current.value).toBeGreaterThan(previous.value);
+      }
+    }
+    expect(
+      items
+        .filter((item) => item.slot === 'material')
+        .every((item) => item.gatherSkill === 'mining' || item.gatherSkill === 'herbalism'),
+    ).toBe(true);
+  });
 });

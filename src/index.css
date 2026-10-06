@@ -528,6 +528,50 @@ select {
   margin-left: 0.5rem;
 }
 
+.gather-board {
+  max-width: 62rem;
+}
+
+.gather-board h2,
+.gather-hero h4,
+.active-gatherer h4 {
+  color: #f0c869;
+}
+
+.gather-heroes,
+.active-gatherers {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.gather-heroes {
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.gather-hero,
+.active-gatherer {
+  padding: 1rem;
+  border: 1px solid #62563f;
+  border-radius: 0.35rem;
+  background: #29241c;
+}
+
+.gather-hero h4,
+.active-gatherer h4 {
+  margin-top: 0;
+}
+
+.gather-skill {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+}
+
+.gather-skill small {
+  color: #b8b09a;
+}
+
 .hero-details {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

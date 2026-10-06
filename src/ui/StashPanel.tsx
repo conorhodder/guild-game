@@ -35,7 +35,11 @@ function ItemDetails({ item }: { item: ItemData }) {
     <>
       <p className={`item-rarity rarity-${item.rarity}`}>{item.rarity}</p>
       <p>Slot: {slotLabels[item.slot]}</p>
-      <p>Level required: {item.levelReq}</p>
+      <p>
+        {item.gatherSkill
+          ? `Skill required: ${item.gatherSkill === 'mining' ? 'Mining' : 'Herbalism'} ${item.levelReq}`
+          : `Level required: ${item.levelReq}`}
+      </p>
       <p>Classes: {restrictions}</p>
       <p>Stats: {stats || '—'}</p>
       <p>Value: {item.value} gold</p>

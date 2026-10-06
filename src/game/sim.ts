@@ -1,6 +1,7 @@
 import type { GameState, LogLine } from './types';
 import { campSystem } from './systems/camps';
 import { fatigueSystem } from './systems/fatigue';
+import { gatheringSystem } from './systems/gathering';
 import { questSystem } from './systems/quests';
 import { recruitmentSystem } from './systems/recruitment';
 import { recoverySystem } from './systems/recovery';
@@ -16,6 +17,7 @@ export type SimSystem = (state: GameState, tickMs: number, events: SimEvent[]) =
 export const defaultSystems: SimSystem[] = [
   questSystem,
   campSystem,
+  gatheringSystem,
   fatigueSystem,
   recoverySystem,
   recruitmentSystem,

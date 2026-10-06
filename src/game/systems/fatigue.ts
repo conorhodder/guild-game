@@ -1,3 +1,4 @@
+import { stopGathering } from './gathering';
 import type { SimSystem } from '../sim';
 
 const FATIGUE_PER_MINUTE = {
@@ -8,7 +9,7 @@ const FATIGUE_PER_MINUTE = {
   idle: -1,
 } as const;
 
-export const fatigueSystem: SimSystem = (state, tickMs) => {
+export const fatigueSystem: SimSystem = (state, tickMs, events) => {
   for (const hero of Object.values(state.heroes)) {
     const injured = hero.injuredUntil !== null && hero.injuredUntil > tickMs;
     const activity = hero.activityId ? state.activities[hero.activityId] : undefined;
@@ -18,5 +19,8 @@ export const fatigueSystem: SimSystem = (state, tickMs) => {
         ? FATIGUE_PER_MINUTE[activity.kind]
         : FATIGUE_PER_MINUTE.idle;
     hero.fatigue = Math.min(100, Math.max(0, hero.fatigue + rate / 60));
+    if (hero.fatigue >= 100 && activity?.kind === 'gather') {
+      stopGathering(state, activity, events, tickMs);
+    }
   }
 };

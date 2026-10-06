@@ -25,6 +25,7 @@ describe('StashPanel', () => {
     expect(screen.getByText('Stats: HP +4')).toBeDefined();
     expect(screen.getByText('Value: 8 gold')).toBeDefined();
     expect(screen.getByText('Quantity: 3')).toBeDefined();
+    expect(screen.getByText('Skill required: Mining 1')).toBeDefined();
 
     fireEvent.click(screen.getByRole('button', { name: 'Sell Copper Band for 8 gold' }));
     fireEvent.change(

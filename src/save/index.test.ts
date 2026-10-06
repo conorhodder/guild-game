@@ -104,6 +104,15 @@ describe('save format', () => {
     expect(state.recruitment.refreshAt).toBe(30 * 60_000);
   });
 
+  it('defaults gather activity yield counts when migrating the v6 save', () => {
+    const state = loadEnvelope(JSON.stringify(fixtureFiles['./fixtures/v6.json']));
+
+    expect(state.activities.a11).toMatchObject({
+      kind: 'gather',
+      yields: 0,
+    });
+  });
+
   it('round-trips JSON and UTF-8 base64 saves', () => {
     const state = createNewGame({
       seed: 42,
@@ -153,6 +162,22 @@ describe('save format', () => {
             endsAt: 120_000,
             nextEncounterAt: 40_000,
             encountersLeft: 2,
+          },
+        },
+      }),
+    ).toBe(false);
+    expect(
+      isGameState({
+        ...state,
+        activities: {
+          a1: {
+            kind: 'gather',
+            id: 'a1',
+            heroId: 'h1',
+            skill: 'mining',
+            startedAt: 0,
+            nextYieldAt: 60_000,
+            yields: -1,
           },
         },
       }),

@@ -22,6 +22,7 @@ describe('App', () => {
     expect(screen.getByRole('tab', { name: 'Roster', selected: true })).toBeDefined();
     expect(screen.getByRole('tab', { name: 'Quests' })).toBeDefined();
     expect(screen.getByRole('tab', { name: 'Zones' })).toBeDefined();
+    expect(screen.getByRole('tab', { name: 'Gather' })).toBeDefined();
     expect(screen.getByRole('tab', { name: 'Recruit' })).toBeDefined();
     expect(screen.getByRole('tab', { name: 'Stash' })).toBeDefined();
     expect(screen.getByRole('tab', { name: 'Log' })).toBeDefined();

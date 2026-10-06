@@ -19,7 +19,7 @@ import type {
 } from '../game/types';
 
 export const SAVE_KEY = 'guildmasters-ledger.save';
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 
 export interface SaveEnvelope {
   format: 'tgl-save';
@@ -102,6 +102,20 @@ export const migrations: Record<number, Migration> = {
       migrated as unknown as GameState,
     );
     return migrated;
+  },
+  6: (state) => {
+    if (!isRecord(state) || !isRecord(state.activities)) return state;
+    return {
+      ...state,
+      activities: Object.fromEntries(
+        Object.entries(state.activities).map(([id, activity]) => [
+          id,
+          isRecord(activity) && activity.kind === 'gather'
+            ? { ...activity, yields: activity.yields ?? 0 }
+            : activity,
+        ]),
+      ),
+    };
   },
 };
 
@@ -236,7 +250,9 @@ function isActivity(value: unknown): value is Activity {
       typeof value.startedAt === 'number' &&
       Number.isFinite(value.startedAt) &&
       typeof value.nextYieldAt === 'number' &&
-      Number.isFinite(value.nextYieldAt)
+      Number.isFinite(value.nextYieldAt) &&
+      Number.isInteger(value.yields) &&
+      (value.yields as number) >= 0
     );
   }
   return (

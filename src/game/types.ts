@@ -20,6 +20,7 @@ export interface ItemData {
   slot: ItemSlot;
   rarity: Rarity;
   levelReq: number;
+  gatherSkill?: GatherSkill;
   classes: ClassId[] | 'all';
   stats: ItemStats;
   value: number;
@@ -86,6 +87,7 @@ export type Activity =
       skill: GatherSkill;
       startedAt: number;
       nextYieldAt: number;
+      yields: number;
     }
   | { kind: 'rest'; id: string; heroId: string; startedAt: number };
 

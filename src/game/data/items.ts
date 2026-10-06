@@ -1,4 +1,4 @@
-import type { ClassId, ItemData, Slot } from '../types';
+import type { ClassId, GatherSkill, ItemData, Slot } from '../types';
 
 export const items: ItemData[] = [
   {
@@ -277,6 +277,7 @@ export const items: ItemData[] = [
     slot: 'material',
     rarity: 'common',
     levelReq: 1,
+    gatherSkill: 'mining',
     classes: 'all',
     stats: {},
     value: 2,
@@ -287,6 +288,7 @@ export const items: ItemData[] = [
     slot: 'material',
     rarity: 'common',
     levelReq: 1,
+    gatherSkill: 'herbalism',
     classes: 'all',
     stats: {},
     value: 3,
@@ -297,15 +299,58 @@ export const items: ItemData[] = [
     slot: 'material',
     rarity: 'uncommon',
     levelReq: 4,
+    gatherSkill: 'herbalism',
     classes: 'all',
     stats: {},
     value: 8,
+  },
+  {
+    id: 'iron-ore',
+    name: 'Iron Ore',
+    slot: 'material',
+    rarity: 'common',
+    levelReq: 5,
+    gatherSkill: 'mining',
+    classes: 'all',
+    stats: {},
+    value: 12,
+  },
+  {
+    id: 'mithril-ore',
+    name: 'Mithril Ore',
+    slot: 'material',
+    rarity: 'uncommon',
+    levelReq: 10,
+    gatherSkill: 'mining',
+    classes: 'all',
+    stats: {},
+    value: 30,
+  },
+  {
+    id: 'starbloom',
+    name: 'Starbloom',
+    slot: 'material',
+    rarity: 'uncommon',
+    levelReq: 10,
+    gatherSkill: 'herbalism',
+    classes: 'all',
+    stats: {},
+    value: 32,
   },
 ];
 
 export const itemsById: Record<string, ItemData> = Object.fromEntries(
   items.map((item) => [item.id, item]),
 );
+
+export const gatheringMaterials: Record<GatherSkill, ItemData[]> = {
+  mining: items
+    .filter((item) => item.slot === 'material' && item.gatherSkill === 'mining')
+    .sort((first, second) => first.levelReq - second.levelReq),
+  herbalism: items
+    .filter((item) => item.slot === 'material' && item.gatherSkill === 'herbalism')
+    .sort((first, second) => first.levelReq - second.levelReq),
+};
 
 export const starterGear: Record<ClassId, Partial<Record<Slot, string>>> = {
   warrior: {

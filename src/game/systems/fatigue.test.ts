@@ -49,6 +49,7 @@ describe('fatigue system', () => {
         skill: 'mining' as const,
         startedAt: 0,
         nextYieldAt: 60_000,
+        yields: 0,
       },
       rest: { kind: 'rest' as const, id: 'a4', heroId: hero.id, startedAt: 0 },
     };

@@ -10,13 +10,15 @@ import {
   sell,
   sellMaterial,
   startCamp,
+  startGather,
   unequip,
 } from './game/actions';
-import { campChannel, questChannel } from './game/activityChannels';
+import { campChannel, gatherChannel, questChannel } from './game/activityChannels';
 import { campsById } from './game/data/zones';
 import { questsById } from './game/data/quests';
 import { SettingsPanel } from './ui/SettingsPanel';
 import { FoundGuildForm } from './ui/FoundGuildForm';
+import { GatherBoard } from './ui/GatherBoard';
 import { LogPanel } from './ui/LogPanel';
 import { QuestBoard } from './ui/QuestBoard';
 import { RecruitBoard } from './ui/RecruitBoard';
@@ -67,7 +69,12 @@ export default function App() {
   const activityChannels = new Set(
     game.log
       .map((line) => line.channel)
-      .filter((channel) => channel.startsWith('quest:') || channel.startsWith('camp:')),
+      .filter(
+        (channel) =>
+          channel.startsWith('quest:') ||
+          channel.startsWith('camp:') ||
+          channel.startsWith('gather:'),
+      ),
   );
   for (const activity of Object.values(game.activities)) {
     if (activity.kind === 'quest') {
@@ -76,13 +83,18 @@ export default function App() {
     if (activity.kind === 'camp') {
       activityChannels.add(campChannel(activity.id, activity.campId));
     }
+    if (activity.kind === 'gather') {
+      activityChannels.add(gatherChannel(activity.heroId));
+    }
   }
   const channelNames = Object.fromEntries(
     Array.from(activityChannels, (channel) => {
-      const [kind, , activityId] = channel.split(':');
+      const [kind, secondId, thirdId] = channel.split(':');
       const name = kind === 'quest'
-        ? questsById[activityId ?? '']?.name ?? 'Quest'
-        : campsById[activityId ?? '']?.name ?? 'Camp';
+        ? questsById[thirdId ?? '']?.name ?? 'Quest'
+        : kind === 'camp'
+          ? campsById[thirdId ?? '']?.name ?? 'Camp'
+          : `${game.heroes[secondId ?? '']?.name ?? 'Hero'} — Gathering`;
       return [channel, name];
     }),
   );
@@ -146,6 +158,19 @@ export default function App() {
                   setLogChannel(channel);
                   setActiveTab('log');
                 }}
+              />
+            ),
+          },
+          {
+            id: 'gather',
+            label: 'Gather',
+            panel: (
+              <GatherBoard
+                game={game}
+                onRecall={(activityId) => gameStore.dispatch(recall(activityId))}
+                onStartGather={(heroId, skill) =>
+                  gameStore.dispatch(startGather(heroId, skill))
+                }
               />
             ),
           },
