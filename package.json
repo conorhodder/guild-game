@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "balance": "VITE_FULL_BALANCE=1 vitest run src/game/balance/balance.test.ts"
   },
   "dependencies": {
     "react": "^19.3.0",

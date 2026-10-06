@@ -152,9 +152,9 @@ interface GameState {
 *(tunable)*. Effective stats are class base + level growth + the sum of gear
 stats. Skill cap = `5 * (level + 1)`. New heroes start each of their skills at
 `min(cap, 5 + 2*level)`. Gathering skills start at 1 and cap at
-`10 + 4 * level`. XP to the next level is `xpToNext(L) = round(XP_BASE * L ^ XP_EXP)`
-*(tunable; TF-16 sets them to hit S-4)*. Level cap is 20. XP above the cap is
-discarded.
+`10 + 4 * level`. XP to the next level is
+`xpToNext(L) = round(34 * L ^ 1.823)` (`XP_BASE = 34`, `XP_EXP = 1.823`).
+Level cap is 20. XP above the cap is discarded.
 
 New game: the player enters a guild name and gets a Warrior, a Cleric, and
 either a Rogue or a Wizard (rng), all level 1, each with starter gear equipped.
@@ -277,11 +277,12 @@ returns their equipped gear to the stash.
 
 A gathering job takes one *Idle* hero with fatigue below 100. Mining and
 Herbalism each have three material tiers with increasing value and skill
-requirements. Every `max(20, 60 - skill/2)` seconds, the hero gathers one unit
-of the best tier their skill allows, with a 10% chance to gather the tier
-below. Each yield can raise the skill using `trySkillUp` and the gathering
-cap. Materials stack in `materials` and can be sold. Gathering stops at
-fatigue 100; its activity tracks the total yield count.
+requirements (1, 30 and 60); their per-unit values are 1, 2 and 3 gold.
+Every `max(20, 60 - skillValue/2)` seconds, the hero gathers one unit of the
+best tier their skill allows, with a 10% chance to gather the tier below. Each
+yield can raise the skill using `trySkillUp` and the gathering cap. Materials
+stack in `materials` and can be sold. Gathering stops at fatigue 100; its
+activity tracks the total yield count.
 
 ### Offline and "While you were away" (TF-14, AC-13, AC-14, G-4, G-5, J2)
 
@@ -337,3 +338,7 @@ These must pass before every push to `main`: `npm run lint`, `npm run typecheck`
 its main interaction. TF-18 adds an `axe-core` scan of every screen (dev
 dependency only) and a performance test: `advance` over 12 h with 8 heroes and
 2 camps must finish in under 2 s in CI.
+
+TF-16 records the three-seed progression and named-camp balance measurements in
+[docs/balance.md](balance.md); `npm run balance` runs the full deterministic
+simulation.

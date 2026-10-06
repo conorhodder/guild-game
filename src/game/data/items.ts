@@ -1,5 +1,62 @@
 import type { ClassId, GatherSkill, ItemData, Slot } from '../types';
 
+const equipmentMilestones = [
+  { level: 4, title: 'Riverside', value: 30, attack: 2, armor: 1, hp: 5, heal: 1 },
+  { level: 7, title: 'Hearthguard', value: 55, attack: 4, armor: 2, hp: 10, heal: 2 },
+  { level: 10, title: 'Moonsilver', value: 85, attack: 6, armor: 3, hp: 15, heal: 3 },
+  { level: 13, title: 'Ashen', value: 120, attack: 8, armor: 4, hp: 20, heal: 4 },
+  { level: 16, title: 'Starfall', value: 160, attack: 10, armor: 5, hp: 25, heal: 5 },
+  { level: 19, title: 'Dawnforged', value: 205, attack: 12, armor: 6, hp: 30, heal: 6 },
+] as const;
+
+const progressionGear: ItemData[] = equipmentMilestones.flatMap(
+  ({ level, title, value, attack, armor, hp, heal }, index) => {
+    const rarity = index % 2 === 0 ? 'common' : 'uncommon';
+    return [
+      {
+        id: `all-${level}-${title.toLowerCase()}-blade`,
+        name: `${title} Blade`,
+        slot: 'mainHand',
+        rarity,
+        levelReq: level,
+        classes: 'all',
+        stats: { attack },
+        value,
+      },
+      {
+        id: `all-${level}-${title.toLowerCase()}-ward`,
+        name: `${title} Ward`,
+        slot: 'offHand',
+        rarity,
+        levelReq: level,
+        classes: 'all',
+        stats: { armor, hp: index * 2 },
+        value,
+      },
+      {
+        id: `all-${level}-${title.toLowerCase()}-hauberk`,
+        name: `${title} Hauberk`,
+        slot: 'body',
+        rarity,
+        levelReq: level,
+        classes: 'all',
+        stats: { hp, armor },
+        value,
+      },
+      {
+        id: `all-${level}-${title.toLowerCase()}-charm`,
+        name: `${title} Charm`,
+        slot: 'trinket',
+        rarity,
+        levelReq: level,
+        classes: 'all',
+        stats: { hp: index * 2 + 3, attack: index, heal },
+        value,
+      },
+    ];
+  },
+);
+
 export const items: ItemData[] = [
   {
     id: 'warrior-iron-sword',
@@ -107,7 +164,7 @@ export const items: ItemData[] = [
     slot: 'offHand',
     rarity: 'common',
     levelReq: 1,
-    classes: ['warrior', 'cleric'],
+    classes: 'all',
     stats: { armor: 2 },
     value: 10,
   },
@@ -280,7 +337,7 @@ export const items: ItemData[] = [
     gatherSkill: 'mining',
     classes: 'all',
     stats: {},
-    value: 2,
+    value: 1,
   },
   {
     id: 'bitterleaf',
@@ -291,52 +348,53 @@ export const items: ItemData[] = [
     gatherSkill: 'herbalism',
     classes: 'all',
     stats: {},
-    value: 3,
+    value: 1,
   },
   {
     id: 'moon-salt',
     name: 'Moon Salt',
     slot: 'material',
     rarity: 'uncommon',
-    levelReq: 4,
+    levelReq: 30,
     gatherSkill: 'herbalism',
     classes: 'all',
     stats: {},
-    value: 8,
+    value: 2,
   },
   {
     id: 'iron-ore',
     name: 'Iron Ore',
     slot: 'material',
     rarity: 'common',
-    levelReq: 5,
+    levelReq: 30,
     gatherSkill: 'mining',
     classes: 'all',
     stats: {},
-    value: 12,
+    value: 2,
   },
   {
     id: 'mithril-ore',
     name: 'Mithril Ore',
     slot: 'material',
     rarity: 'uncommon',
-    levelReq: 10,
+    levelReq: 60,
     gatherSkill: 'mining',
     classes: 'all',
     stats: {},
-    value: 30,
+    value: 3,
   },
   {
     id: 'starbloom',
     name: 'Starbloom',
     slot: 'material',
     rarity: 'uncommon',
-    levelReq: 10,
+    levelReq: 60,
     gatherSkill: 'herbalism',
     classes: 'all',
     stats: {},
-    value: 32,
+    value: 3,
   },
+  ...progressionGear,
 ];
 
 export const itemsById: Record<string, ItemData> = Object.fromEntries(

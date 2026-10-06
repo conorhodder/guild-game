@@ -71,7 +71,7 @@ describe('gathering system', () => {
     const samples = 10_000;
     let lowerTier = 0;
     for (let sample = 0; sample < samples; sample += 1) {
-      if (rollGatheringMaterial(state, 'mining', 10)?.id === 'iron-ore') lowerTier += 1;
+      if (rollGatheringMaterial(state, 'mining', 30)?.id === 'copper-ore') lowerTier += 1;
     }
 
     expect(Math.abs(lowerTier / samples - 0.1)).toBeLessThanOrEqual(0.02);

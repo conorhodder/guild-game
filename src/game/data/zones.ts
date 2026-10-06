@@ -25,7 +25,7 @@ export const zones: ZoneData[] = [
         name: 'Marsh Edge',
         monsters: ['marsh-rat', 'bog-crawler'],
         namedId: 'grizzlefang',
-        namedChance: 0.08,
+        namedChance: 0.05,
         respawnSec: 90,
       },
       {
@@ -48,7 +48,7 @@ export const zones: ZoneData[] = [
         name: 'Cinder Fields',
         monsters: ['iron-golem', 'ember-sprite', 'ash-stalker'],
         namedId: 'ashen-wyrm',
-        namedChance: 0.1,
+        namedChance: 0.05,
         respawnSec: 100,
       },
       {
@@ -71,7 +71,7 @@ export const zones: ZoneData[] = [
         name: 'Shattered Ridge',
         monsters: ['rift-hydra', 'obsidian-titan', 'dusk-stalker'],
         namedId: 'cindermaw',
-        namedChance: 0.08,
+        namedChance: 0.05,
         respawnSec: 120,
       },
       {

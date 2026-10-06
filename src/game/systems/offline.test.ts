@@ -132,7 +132,7 @@ describe('offline progress summaries', () => {
       heroId,
       name: hero.name,
       levelsGained: 1,
-      xpGained: 125,
+      xpGained: 59,
       skillUps: [{ skill: 'mining', count: 2, value: 3 }],
       knockouts: 1,
       needsAttention: false,

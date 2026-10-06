@@ -42,4 +42,26 @@ describe('monster data', () => {
     );
     expect(items.filter((item) => item.rarity === 'rare').length).toBeGreaterThanOrEqual(3);
   });
+
+  it('gives every named monster at least one Named-rarity drop', () => {
+    for (const monster of monsters.filter((candidate) => candidate.named)) {
+      expect(
+        monster.lootTable.entries.some(
+          (entry) => itemsById[entry.itemId]?.rarity === 'named',
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it('makes every common and uncommon progression item obtainable from monster loot', () => {
+    const progressionItems = items.filter((item) => item.id.startsWith('all-'));
+
+    for (const item of progressionItems) {
+      expect(
+        monsters.some((monster) =>
+          monster.lootTable.entries.some((entry) => entry.itemId === item.id),
+        ),
+      ).toBe(true);
+    }
+  });
 });

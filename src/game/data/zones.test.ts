@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { itemsById } from './items';
+import { monsters } from './monsters';
 import { monstersById } from './monsters';
 import { campsById, zones } from './zones';
 
@@ -34,5 +36,26 @@ describe('zone data', () => {
     expect(monstersById['grizzlefang']?.named).toBe(true);
     expect(monstersById['morrow-the-hollow']?.named).toBe(true);
     expect(monstersById['ashen-wyrm']?.named).toBe(true);
+  });
+
+  it('makes Rare loot available from camp monsters and keeps camp levels in their zone bands', () => {
+    const campMonsterIds = new Set(zones.flatMap((zone) => zone.camps.flatMap((camp) => camp.monsters)));
+    const campMonsters = monsters.filter((monster) => campMonsterIds.has(monster.id));
+
+    expect(
+      campMonsters.some((monster) =>
+        monster.lootTable.entries.some((entry) => itemsById[entry.itemId]?.rarity === 'rare'),
+      ),
+    ).toBe(true);
+
+    for (const zone of zones) {
+      for (const camp of zone.camps) {
+        for (const monsterId of [...camp.monsters, ...(camp.namedId ? [camp.namedId] : [])]) {
+          const monster = monstersById[monsterId];
+          expect(monster?.level).toBeGreaterThanOrEqual(zone.levelRange[0]);
+          expect(monster?.level).toBeLessThanOrEqual(zone.levelRange[1]);
+        }
+      }
+    }
   });
 });

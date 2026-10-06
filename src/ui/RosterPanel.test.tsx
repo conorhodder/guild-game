@@ -35,7 +35,7 @@ describe('RosterPanel', () => {
     expect(screen.getByText('Attack')).toBeDefined();
     expect(screen.getByText('Armor')).toBeDefined();
     expect(screen.getByText('Heal')).toBeDefined();
-    expect(screen.getByText('0 / 100 XP')).toBeDefined();
+    expect(screen.getByText('0 / 34 XP')).toBeDefined();
     expect(screen.getByText('Offense: 7 / 10')).toBeDefined();
     expect(screen.getByText('Mining: 1 / 14')).toBeDefined();
     expect(screen.getByText('Main hand: Iron Shortsword')).toBeDefined();
@@ -96,7 +96,7 @@ describe('RosterPanel', () => {
       />,
     );
 
-    expect(screen.getByText('12 / 100 XP')).toBeDefined();
+    expect(screen.getByText('12 / 34 XP')).toBeDefined();
     expect(screen.getByRole('progressbar', { name: `${hero.name} experience` })).toHaveProperty(
       'value',
       12,

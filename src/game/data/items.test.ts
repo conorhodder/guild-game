@@ -35,15 +35,33 @@ describe('item data', () => {
       expect(gear.body).toBeDefined();
     }
     expect(starterGear.warrior.offHand).toBeDefined();
-    expect(additionalGear).toHaveLength(8);
+    expect(additionalGear.filter((item) => item.levelReq <= 6).length).toBeGreaterThanOrEqual(8);
     expect(
       additionalGear.every(
         (item) =>
           (item.rarity === 'common' || item.rarity === 'uncommon') &&
           item.levelReq >= 1 &&
-          item.levelReq <= 6,
+          item.levelReq <= 20,
       ),
     ).toBe(true);
+  });
+
+  it('provides common and uncommon upgrades in every slot for each class through level 20', () => {
+    const milestones = [4, 7, 10, 13, 16, 19];
+    const slots = ['mainHand', 'offHand', 'body', 'trinket'];
+
+    for (const level of milestones) {
+      for (const slot of slots) {
+        const item = items.find(
+          (candidate) =>
+            candidate.id.startsWith(`all-${level}-`) &&
+            candidate.slot === slot &&
+            (candidate.rarity === 'common' || candidate.rarity === 'uncommon'),
+        );
+        expect(item).toBeDefined();
+        expect(item?.classes).toBe('all');
+      }
+    }
   });
 
   it('defines three increasingly valuable and demanding materials for each gathering skill', () => {
@@ -53,6 +71,7 @@ describe('item data', () => {
         .sort((first, second) => first.levelReq - second.levelReq);
 
       expect(materials).toHaveLength(3);
+      expect(materials.map((item) => item.levelReq)).toEqual([1, 30, 60]);
       for (let index = 1; index < materials.length; index += 1) {
         const previous = materials[index - 1];
         const current = materials[index];
@@ -60,6 +79,7 @@ describe('item data', () => {
         expect(current.levelReq).toBeGreaterThan(previous.levelReq);
         expect(current.value).toBeGreaterThan(previous.value);
       }
+      expect(materials.at(-1)?.value).toBeLessThanOrEqual(3);
     }
     expect(
       items

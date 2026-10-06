@@ -1,3 +1,5 @@
+import { items } from './items';
+
 export interface LootEntry {
   itemId: string;
   chance: number;
@@ -141,7 +143,7 @@ export const monsters: MonsterData[] = [
     xp: 260,
     lootTable: {
       gold: [25, 45],
-      entries: [{ itemId: 'morrow-heartstone', chance: 0.03 }],
+      entries: [{ itemId: 'morrow-heartstone', chance: 0.2 }],
     },
     named: true,
     glyph: '💀',
@@ -157,7 +159,7 @@ export const monsters: MonsterData[] = [
     lootTable: {
       gold: [28, 46],
       entries: [
-        { itemId: 'grizzlefang-tooth', chance: 0.04 },
+        { itemId: 'grizzlefang-tooth', chance: 0.2 },
         { itemId: 'wolfheart-charm', chance: 0.08 },
       ],
     },
@@ -175,7 +177,7 @@ export const monsters: MonsterData[] = [
     lootTable: {
       gold: [90, 145],
       entries: [
-        { itemId: 'ashen-wyrm-scale', chance: 0.025 },
+        { itemId: 'ashen-wyrm-scale', chance: 0.2 },
         { itemId: 'star-iron-ring', chance: 0.05 },
       ],
     },
@@ -283,7 +285,7 @@ export const monsters: MonsterData[] = [
     lootTable: {
       gold: [75, 110],
       entries: [
-        { itemId: 'glasswing-filament', chance: 0.035 },
+        { itemId: 'glasswing-filament', chance: 0.2 },
         { itemId: 'star-iron-ring', chance: 0.06 },
       ],
     },
@@ -346,7 +348,7 @@ export const monsters: MonsterData[] = [
     lootTable: {
       gold: [130, 190],
       entries: [
-        { itemId: 'cindermaw-heart', chance: 0.025 },
+        { itemId: 'cindermaw-heart', chance: 0.2 },
         { itemId: 'ashen-wyrm-scale', chance: 0.05 },
       ],
     },
@@ -409,7 +411,7 @@ export const monsters: MonsterData[] = [
     lootTable: {
       gold: [200, 300],
       entries: [
-        { itemId: 'star-eater-eye', chance: 0.02 },
+        { itemId: 'star-eater-eye', chance: 0.2 },
         { itemId: 'cindermaw-heart', chance: 0.045 },
       ],
     },
@@ -417,6 +419,30 @@ export const monsters: MonsterData[] = [
     glyph: '🌌',
   },
 ];
+
+for (const item of items.filter(
+  (candidate) =>
+    candidate.id.startsWith('all-') &&
+    candidate.slot !== 'material' &&
+    (candidate.rarity === 'common' || candidate.rarity === 'uncommon'),
+)) {
+  if (
+    monsters.some((monster) =>
+      monster.lootTable.entries.some((entry) => entry.itemId === item.id),
+    )
+  ) {
+    continue;
+  }
+
+  const source = monsters
+    .filter((monster) => monster.named !== true)
+    .sort(
+      (first, second) =>
+        Math.abs(first.level - item.levelReq) -
+        Math.abs(second.level - item.levelReq),
+    )[0];
+  source?.lootTable.entries.push({ itemId: item.id, chance: 0.05 });
+}
 
 export const monstersById: Record<string, MonsterData> = Object.fromEntries(
   monsters.map((monster) => [monster.id, monster]),

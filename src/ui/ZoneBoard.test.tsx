@@ -60,7 +60,7 @@ describe('ZoneBoard', () => {
       <ZoneBoard game={game} onStartCamp={onStartCamp} onRecall={onRecall} onViewLog={onViewLog} />,
     );
     expect(
-      screen.getByText("Named drops: Grizzlefang's Tooth (4%), Wolfheart Charm (8%)"),
+      screen.getByText("Named drops: Grizzlefang's Tooth (20%), Wolfheart Charm (8%)"),
     ).toBeDefined();
   });
 });

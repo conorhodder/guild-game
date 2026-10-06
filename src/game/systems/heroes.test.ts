@@ -79,8 +79,8 @@ describe('heroes', () => {
     if (!hero) throw new Error('Expected a starter hero.');
     const events: Parameters<typeof grantXp>[3] = [];
 
-    expect(xpToNext(1)).toBe(100);
-    expect(xpToNext(2)).toBe(459);
+    expect(xpToNext(1)).toBe(34);
+    expect(xpToNext(2)).toBe(120);
     grantXp(state, hero.id, xpToNext(1) + xpToNext(2) + 40, events);
 
     expect(hero.level).toBe(3);

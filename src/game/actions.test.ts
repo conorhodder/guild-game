@@ -127,7 +127,7 @@ describe('equipment and vendor actions', () => {
     const materialResult = sellMaterial('copper-ore', 2)(state, 0);
     expect('state' in materialResult).toBe(true);
     if (!('state' in materialResult)) return;
-    expect(materialResult.state.gold).toBe(state.gold + 4);
+    expect(materialResult.state.gold).toBe(state.gold + 2);
     expect(materialResult.state.materials['copper-ore']).toBe(1);
   });
 

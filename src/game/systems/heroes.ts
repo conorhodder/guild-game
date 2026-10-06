@@ -6,8 +6,8 @@ import type { GameState, Hero, ClassId, GatherSkill, CombatSkill } from '../type
 import { appendLog } from './log';
 import type { SimEvent } from '../sim';
 
-export const XP_BASE = 100;
-export const XP_EXP = 2.2;
+export const XP_BASE = 34;
+export const XP_EXP = 1.823;
 export const HERO_LEVEL_CAP = 20;
 
 export type HeroStatus = 'Idle' | 'On quest' | 'Camping' | 'Gathering' | 'Resting' | 'Injured';

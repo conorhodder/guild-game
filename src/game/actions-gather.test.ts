@@ -72,7 +72,7 @@ describe('gather actions', () => {
 
     expect('state' in result).toBe(true);
     if (!('state' in result)) return;
-    expect(result.state.gold).toBe(initialGold + 30);
+    expect(result.state.gold).toBe(initialGold + 3);
     expect(result.state.materials['mithril-ore']).toBe(1);
   });
 });
