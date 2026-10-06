@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { questChannel } from '../game/activityChannels';
 import type { GameState, LogCategory } from '../game/types';
+import { formatLogTimestamp } from './formatSimTime';
 
 const categories: { id: LogCategory; label: string }[] = [
   { id: 'combat', label: 'Combat' },
@@ -41,6 +42,9 @@ export function LogPanel({
   channelNames = {},
   onChannelChange,
 }: LogPanelProps) {
+  const logContainerRef = useRef<HTMLDivElement>(null);
+  const pinnedToBottom = useRef(true);
+  const [showJumpToLatest, setShowJumpToLatest] = useState(false);
   const [enabledCategories, setEnabledCategories] = useState<Record<LogCategory, boolean>>({
     combat: true,
     loot: true,
@@ -56,14 +60,39 @@ export function LogPanel({
         .filter((channel): channel is string => channel !== null),
     ]),
   );
-  const lines = game.log
-    .slice()
-    .reverse()
-    .filter(
+  const lines = game.log.filter(
       (line) =>
         enabledCategories[line.category] &&
         (selectedChannel === 'all' || line.channel === selectedChannel),
     );
+
+  useLayoutEffect(() => {
+    const container = logContainerRef.current;
+    if (!container) return;
+    if (pinnedToBottom.current) {
+      container.scrollTop = container.scrollHeight;
+      setShowJumpToLatest(false);
+    } else {
+      setShowJumpToLatest(true);
+    }
+  }, [lines]);
+
+  function handleLogScroll() {
+    const container = logContainerRef.current;
+    if (!container) return;
+    const atBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight <= 8;
+    pinnedToBottom.current = atBottom;
+    setShowJumpToLatest(!atBottom);
+  }
+
+  function jumpToLatest() {
+    const container = logContainerRef.current;
+    if (!container) return;
+    pinnedToBottom.current = true;
+    container.scrollTop = container.scrollHeight;
+    setShowJumpToLatest(false);
+  }
 
   return (
     <section aria-labelledby="log-heading" className="log-panel">
@@ -78,7 +107,7 @@ export function LogPanel({
             }
             type="button"
           >
-            {label}
+            {enabledCategories[id] ? `✓ ${label}` : label}
           </button>
         ))}
       </div>
@@ -95,26 +124,41 @@ export function LogPanel({
           </option>
         ))}
       </select>
-      {lines.length === 0 ? (
-        <p>No log entries match these filters.</p>
-      ) : (
-        <ol className="log-entries">
-          {lines.map((line) => (
-            <li
-              className={line.highlight ? 'log-highlight' : undefined}
-              key={line.id}
-            >
-              {line.highlight ? (
-                <strong>
-                  <span aria-live="polite" role="log">★ {line.text}</span>
-                </strong>
-              ) : (
-                line.text
-              )}
-            </li>
-          ))}
-        </ol>
+      {showJumpToLatest && (
+        <button onClick={jumpToLatest} type="button">
+          Jump to latest
+        </button>
       )}
+      <div
+        aria-label="Log entries"
+        className="log-scroll"
+        onScroll={handleLogScroll}
+        ref={logContainerRef}
+        role="region"
+        tabIndex={0}
+      >
+        {lines.length === 0 ? (
+          <p>No log entries match these filters.</p>
+        ) : (
+          <ol className="log-entries">
+            {lines.map((line) => (
+              <li
+                className={line.highlight ? 'log-highlight' : undefined}
+                key={line.id}
+              >
+                <span className="log-timestamp">{formatLogTimestamp(line.simMs)}</span>{' '}
+                {line.highlight ? (
+                  <strong>
+                    <span aria-live="polite" role="log">★ {line.text}</span>
+                  </strong>
+                ) : (
+                  line.text
+                )}
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
     </section>
   );
 }

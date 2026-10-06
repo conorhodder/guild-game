@@ -62,6 +62,16 @@ describe('combat resolver', () => {
     resolve(state, 'ember-drake');
 
     expect(state.log.some((line) => line.text.includes(' heals '))).toBe(true);
+    expect(
+      state.log
+        .filter((line) => line.text.includes('points of damage'))
+        .every((line) => /for \d+ points of damage\.$/.test(line.text)),
+    ).toBe(true);
+    expect(
+      state.log
+        .filter((line) => line.text.includes(' heals '))
+        .every((line) => /for \d+ HP\.$/.test(line.text)),
+    ).toBe(true);
   });
 
   it('awards no XP for a trivial target', () => {

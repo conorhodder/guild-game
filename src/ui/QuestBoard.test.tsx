@@ -51,4 +51,21 @@ describe('QuestBoard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'View log' }));
     expect(onViewLog).toHaveBeenCalledWith(expect.stringContaining('quest:'));
   });
+
+  it('falls back to the whole roster average when no heroes are idle', () => {
+    const game = foundGuild('The Wayfarers')(
+      createNewGame({ seed: 42, wallMs: 0, guildName: '' }),
+    );
+    for (const hero of Object.values(game.heroes)) {
+      hero.level = 6;
+      hero.injuredUntil = 60_000;
+    }
+
+    render(<QuestBoard game={game} onDispatch={vi.fn(() => null)} onViewLog={vi.fn()} />);
+
+    const firstQuestCard = screen
+      .getByRole('heading', { name: 'Rats in the Cellar' })
+      .closest('article');
+    expect(firstQuestCard?.textContent).toContain('Recommended level: 1 Trivial');
+  });
 });

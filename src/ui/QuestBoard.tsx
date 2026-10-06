@@ -35,7 +35,13 @@ export function QuestBoard({ game, onDispatch, onViewLog }: QuestBoardProps) {
   const idleLevels = heroes
     .filter((hero) => heroStatus(hero, game) === 'Idle')
     .map((hero) => hero.level);
-  const conLevels = selectedLevels.length > 0 ? selectedLevels : idleLevels;
+  const rosterLevels = heroes.map((hero) => hero.level);
+  const conLevels =
+    selectedLevels.length > 0
+      ? selectedLevels
+      : idleLevels.length > 0
+        ? idleLevels
+        : rosterLevels;
   const activeQuests = Object.values(game.activities).filter(
     (activity) => activity.kind === 'quest',
   );
@@ -102,6 +108,7 @@ export function QuestBoard({ game, onDispatch, onViewLog }: QuestBoardProps) {
               {quest.firstQuest && <p className="first-quest-label">Easy first quest</p>}
               <p>
                 Recommended level: {quest.level}
+                {' '}
                 <ConBadge con={conTier(quest.level, conLevels)} />
               </p>
               <p>Duration: {quest.durationMin} minutes</p>

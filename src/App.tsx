@@ -16,19 +16,8 @@ import { QuestBoard } from './ui/QuestBoard';
 import { RosterPanel } from './ui/RosterPanel';
 import { StashPanel } from './ui/StashPanel';
 import { Tabs } from './ui/Tabs';
+import { formatSimClock } from './ui/formatSimTime';
 import { gameStore, useGame, useSaveNotice } from './store';
-
-function formatSimClock(simMs: number): string {
-  const totalSeconds = Math.floor(simMs / 1000);
-  const day = Math.floor(totalSeconds / 86_400) + 1;
-  const secondsInDay = totalSeconds % 86_400;
-  const hours = Math.floor(secondsInDay / 3600);
-  const minutes = Math.floor((secondsInDay % 3600) / 60);
-  const seconds = secondsInDay % 60;
-  const twoDigits = (value: number) => String(value).padStart(2, '0');
-
-  return `Day ${day}, ${twoDigits(hours)}:${twoDigits(minutes)}:${twoDigits(seconds)}`;
-}
 
 export default function App() {
   const game = useGame();

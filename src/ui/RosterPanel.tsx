@@ -53,6 +53,7 @@ function HeroSheet({
   const status = heroStatus(hero, game);
   const stats = heroStats(hero, game);
   const xpRequired = xpToNext(hero.level);
+  const displayedXp = Math.floor(hero.xp);
   const health = hero.injuredUntil !== null && hero.injuredUntil > game.clock.simMs
     ? 'Injured'
     : 'Healthy';
@@ -129,8 +130,8 @@ function HeroSheet({
 
       <section aria-labelledby="hero-xp-heading">
         <h4 id="hero-xp-heading">Experience</h4>
-        <progress aria-label={`${hero.name} experience`} max={xpRequired} value={hero.xp} />
-        <p>{hero.xp} / {xpRequired} XP</p>
+        <progress aria-label={`${hero.name} experience`} max={xpRequired} value={displayedXp} />
+        <p>{displayedXp} / {xpRequired} XP</p>
       </section>
 
       <section aria-labelledby="hero-skills-heading">

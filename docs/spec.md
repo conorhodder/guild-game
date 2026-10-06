@@ -188,15 +188,15 @@ loot.
 Each round, every standing hero acts in `heroIds` order, then the monster acts.
 
 - Hero hit chance: `clamp(0.65 + (offense - 5*mLevel)/200, 0.05, 0.95)`.
-  Damage: `attack * U(0.8,1.2) - mArmor/2`, minimum 1. A Rogue crits (×2) with
-  chance `0.05 + backstab/400`. A Wizard adds `evocation/10` damage. Each
+  Damage is `max(1, round(attack * U(0.8,1.2) - mArmor/2))`. A Rogue crits (×2)
+  with chance `0.05 + backstab/400`. A Wizard adds `evocation/10` damage. Each
   attack is a use of offense, and of backstab or evocation where they apply.
 - Cleric: if any standing ally is below 60% HP, the cleric heals the lowest one
-  for `heal + healing/4 + 4` (a healing use) instead of attacking.
+  for `round(heal + healing/4 + 4)` (a healing use) instead of attacking.
 - Monster target: the Warrior if one is standing, otherwise a random standing
   hero. Monster hit chance: `clamp(0.65 + (5*mLevel - defense)/200, 0.05, 0.95)`,
   and each attempt is a defense use for the target. Damage:
-  `mDamage * U(0.8,1.2) - armor/2`, minimum 1.
+  `max(1, round(mDamage * U(0.8,1.2) - armor/2))`.
 - Fatigue above 75 means the hero deals ×0.8 damage and has −0.1 hit chance.
 - Win: base XP `monster.xp * conMult` (trivial 0, easy 0.5, even 1, tough 1.3,
   deadly 1.6), times a group bonus of `1 + 0.1*(n-1)`, split evenly among
@@ -215,6 +215,8 @@ any) return. On completion, the party receives `rewardXp` split evenly, plus
 `rewardGold` and one roll on `lootTable`. Quest cards show recommended level,
 con, duration and possible rewards before dispatch. A new game always offers
 "Rats in the Cellar" (level 1, 2 minutes), labelled **Easy first quest**.
+
+XP remains fractional internally, but the UI displays it rounded down.
 
 ### Skills (TF-8, AC-9, AC-10)
 

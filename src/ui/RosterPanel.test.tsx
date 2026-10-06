@@ -62,6 +62,23 @@ describe('RosterPanel', () => {
     expect(onEquip).toHaveBeenCalledWith(hero.id, instance.uid);
   });
 
+  it('rounds fractional XP down in the sheet and progress bar', () => {
+    const game = foundGuild('The Wayfarers')(
+      createNewGame({ seed: 42, wallMs: 0, guildName: '' }),
+    );
+    const hero = game.heroes[game.heroOrder[0] ?? ''];
+    if (!hero) throw new Error('Expected a starter hero.');
+    hero.xp = 12.9;
+
+    render(<RosterPanel game={game} onEquip={vi.fn(() => null)} onUnequip={vi.fn(() => null)} />);
+
+    expect(screen.getByText('12 / 100 XP')).toBeDefined();
+    expect(screen.getByRole('progressbar', { name: `${hero.name} experience` })).toHaveProperty(
+      'value',
+      12,
+    );
+  });
+
   it('disables invalid picker entries and explains the restriction', () => {
     const game = foundGuild('The Wayfarers')(
       createNewGame({ seed: 42, wallMs: 0, guildName: '' }),
