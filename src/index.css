@@ -48,6 +48,15 @@ h1 {
   font-size: 1.25rem;
 }
 
+.header-stats {
+  text-align: right;
+}
+
+.sim-clock {
+  margin: 0;
+  color: #b8b09a;
+}
+
 .tabs {
   margin-top: 1.5rem;
 }

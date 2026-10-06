@@ -26,4 +26,21 @@ export default tseslint.config(
     files: ['*.config.{js,ts}'],
     languageOptions: { globals: globals.node },
   },
+  {
+    files: ['src/game/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-properties': [
+        'error',
+        { object: 'Math', property: 'random', message: 'Use the seeded game RNG.' },
+        { object: 'Date', property: 'now', message: 'Pass wall time in as an argument.' },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "NewExpression[callee.name='Date'][arguments.length=0]",
+          message: 'Pass wall time in as an argument.',
+        },
+      ],
+    },
+  },
 );

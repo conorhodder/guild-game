@@ -1,9 +1,11 @@
 import { useSyncExternalStore } from 'react';
+import { syncToWall } from './game/clock';
 import { createNewGame } from './game/newGame';
 import type { GameState } from './game/types';
 import { loadEnvelope, SAVE_KEY, serialize } from './save';
 
 const AUTOSAVE_MS = 30_000;
+const CLOCK_INTERVAL_MS = 1000;
 
 export interface StorageLike {
   getItem(key: string): string | null;
@@ -15,6 +17,7 @@ export interface GameStoreOptions {
   storage?: StorageLike;
   now?: () => number;
   seed?: () => number;
+  document?: Document;
 }
 
 export type GameAction = (state: GameState, wallMs: number) => GameState;
@@ -32,12 +35,23 @@ export class GameStore {
   private readonly storage: StorageLike;
   private readonly now: () => number;
   private readonly seed: () => number;
+  private readonly document: Document;
   private readonly autosaveTimer: ReturnType<typeof setInterval>;
+  private clockTimer: ReturnType<typeof setInterval> | null = null;
+  private readonly visibilityHandler = () => {
+    if (this.document.visibilityState === 'visible') {
+      this.syncClock();
+      this.startClockTimer();
+    } else {
+      this.stopClockTimer();
+    }
+  };
 
   constructor(options: GameStoreOptions = {}) {
     this.storage = options.storage ?? window.localStorage;
     this.now = options.now ?? Date.now;
     this.seed = options.seed ?? randomSeed;
+    this.document = options.document ?? window.document;
 
     const rawSave = this.storage.getItem(SAVE_KEY);
     if (rawSave === null) {
@@ -55,6 +69,9 @@ export class GameStore {
       }
     }
 
+    this.syncClock();
+    this.document.addEventListener('visibilitychange', this.visibilityHandler);
+    this.startClockTimer();
     this.autosaveTimer = setInterval(() => this.saveNow(), AUTOSAVE_MS);
   }
 
@@ -84,6 +101,8 @@ export class GameStore {
 
   destroy(): void {
     clearInterval(this.autosaveTimer);
+    this.stopClockTimer();
+    this.document.removeEventListener('visibilitychange', this.visibilityHandler);
     this.subscribers.clear();
   }
 
@@ -97,6 +116,23 @@ export class GameStore {
 
   private saveNow(): void {
     if (this.state) this.storage.setItem(SAVE_KEY, serialize(this.state, this.now()));
+  }
+
+  private syncClock(): void {
+    if (!this.state) return;
+    this.state = syncToWall(this.state, this.now()).state;
+    this.notify();
+  }
+
+  private startClockTimer(): void {
+    if (this.clockTimer !== null || this.document.visibilityState !== 'visible') return;
+    this.clockTimer = setInterval(() => this.syncClock(), CLOCK_INTERVAL_MS);
+  }
+
+  private stopClockTimer(): void {
+    if (this.clockTimer === null) return;
+    clearInterval(this.clockTimer);
+    this.clockTimer = null;
   }
 
   private notify(): void {

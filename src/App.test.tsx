@@ -13,6 +13,7 @@ describe('App', () => {
     expect(screen.getByRole('tablist', { name: 'Game sections' })).toBeDefined();
     expect(screen.getByRole('tab', { name: 'Settings', selected: true })).toBeDefined();
     expect(screen.getByRole('button', { name: 'Download .txt' })).toBeDefined();
+    expect(screen.getByText('Day 1, 00:00:00')).toBeDefined();
   });
 
   it('reports an invalid import without changing the current game', () => {

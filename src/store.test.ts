@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { OFFLINE_CAP_MS } from './game/clock';
 import { createNewGame } from './game/newGame';
 import { loadEnvelope, SAVE_KEY, serialize } from './save';
 import { GameStore } from './store';
@@ -87,9 +88,47 @@ describe('GameStore', () => {
     const storage = new MemoryStorage();
     const game = createNewGame({ seed: 11, wallMs: 12, guildName: 'Test guild' });
     storage.setItem(SAVE_KEY, serialize(game, 13));
-    const store = new GameStore({ storage, now: () => 14, seed: () => 99 });
+    const store = new GameStore({ storage, now: () => 12, seed: () => 99 });
 
     expect(store.getState()).toEqual(game);
     store.destroy();
+  });
+
+  it('pauses the clock while hidden and performs one capped catch-up when visible', () => {
+    vi.useFakeTimers();
+    const visibility = Object.getOwnPropertyDescriptor(document, 'visibilityState');
+    let now = 1000;
+    const storage = new MemoryStorage();
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      value: 'visible',
+    });
+    const store = new GameStore({ storage, now: () => now, seed: () => 1 });
+
+    try {
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        value: 'hidden',
+      });
+      document.dispatchEvent(new Event('visibilitychange'));
+      now = 6000;
+      vi.advanceTimersByTime(5000);
+      expect(store.getState()?.clock.simMs).toBe(0);
+
+      const fortyEightHours = 48 * 60 * 60 * 1000;
+      now = 1000 + fortyEightHours;
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        value: 'visible',
+      });
+      document.dispatchEvent(new Event('visibilitychange'));
+
+      expect(store.getState()?.clock.simMs).toBe(OFFLINE_CAP_MS);
+      expect(store.getState()?.clock.lastWallMs).toBe(now);
+    } finally {
+      store.destroy();
+      if (visibility) Object.defineProperty(document, 'visibilityState', visibility);
+      else Reflect.deleteProperty(document, 'visibilityState');
+    }
   });
 });
