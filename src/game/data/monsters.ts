@@ -146,6 +146,42 @@ export const monsters: MonsterData[] = [
     named: true,
     glyph: '💀',
   },
+  {
+    id: 'grizzlefang',
+    name: 'Grizzlefang',
+    level: 5,
+    hp: 152,
+    damage: 19,
+    armor: 5,
+    xp: 225,
+    lootTable: {
+      gold: [28, 46],
+      entries: [
+        { itemId: 'grizzlefang-tooth', chance: 0.04 },
+        { itemId: 'wolfheart-charm', chance: 0.08 },
+      ],
+    },
+    named: true,
+    glyph: '🐺',
+  },
+  {
+    id: 'ashen-wyrm',
+    name: 'Ashen Wyrm',
+    level: 10,
+    hp: 420,
+    damage: 36,
+    armor: 12,
+    xp: 720,
+    lootTable: {
+      gold: [90, 145],
+      entries: [
+        { itemId: 'ashen-wyrm-scale', chance: 0.025 },
+        { itemId: 'star-iron-ring', chance: 0.05 },
+      ],
+    },
+    named: true,
+    glyph: '🐉',
+  },
 ];
 
 export const monstersById: Record<string, MonsterData> = Object.fromEntries(

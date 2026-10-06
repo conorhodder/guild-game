@@ -33,11 +33,15 @@ export function rollLoot(
       state.stash[instance.uid] = instance;
     }
 
+    const text =
+      item.rarity === 'named'
+        ? `You receive ${item.name} (Named)!`
+        : `You receive a ${item.name}.`;
     const line = appendLog(
       state,
       channel,
       'loot',
-      `You receive a ${item.name}.`,
+      text,
       item.rarity === 'rare' || item.rarity === 'named',
       simMs,
     );
