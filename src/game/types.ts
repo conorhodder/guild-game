@@ -134,6 +134,9 @@ export interface GameState {
     candidates: Hero[];
     refreshAt: number;
   };
+  onboarding: {
+    dismissed: boolean;
+  };
   ledger: GuildLedger;
   log: LogLine[];
   nextLogId: number;

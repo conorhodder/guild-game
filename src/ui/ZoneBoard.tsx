@@ -47,6 +47,9 @@ export function ZoneBoard({ game, onStartCamp, onRecall, onViewLog }: ZoneBoardP
     const hero = game.heroes[heroId];
     return hero ? [hero] : [];
   });
+  const eligibleHeroes = heroes.filter(
+    (hero) => getQuestEligibilityReason(game, hero.id) === null,
+  );
   const selectedLevels = selectedHeroIds.flatMap((heroId) => {
     const hero = game.heroes[heroId];
     return hero ? [hero.level] : [];
@@ -77,8 +80,21 @@ export function ZoneBoard({ game, onStartCamp, onRecall, onViewLog }: ZoneBoardP
   return (
     <section aria-labelledby="zones-heading" className="zone-board">
       <h2 id="zones-heading">Zones</h2>
+      <details className="con-help">
+        <summary>What do the colours mean?</summary>
+        <ul>
+          <li>Trivial: target is at least 5 levels below the party.</li>
+          <li>Easy: target is 2–4 levels below the party.</li>
+          <li>Even: target is within 1 level of the party.</li>
+          <li>Tough: target is 2–3 levels above the party.</li>
+          <li>Deadly: target is at least 4 levels above the party.</li>
+        </ul>
+      </details>
       <fieldset className="zone-party">
         <legend>Choose a camping party (1–4 heroes)</legend>
+        {eligibleHeroes.length === 0 && (
+          <p>No eligible heroes. Rest or wait for recovery before camping.</p>
+        )}
         {heroes.map((hero) => {
           const reason = getQuestEligibilityReason(game, hero.id);
           const selected = selectedHeroIds.includes(hero.id);
@@ -110,7 +126,7 @@ export function ZoneBoard({ game, onStartCamp, onRecall, onViewLog }: ZoneBoardP
 
       <div className="zone-list">
         {zones.map((zone) => {
-          const zoneLevel = Math.round((zone.levelRange[0] + zone.levelRange[1]) / 2);
+          const zoneLevel = zone.levelRange[0];
           return (
             <article className="zone-card" key={zone.id}>
               <h3>{zone.name}</h3>
@@ -124,6 +140,13 @@ export function ZoneBoard({ game, onStartCamp, onRecall, onViewLog }: ZoneBoardP
                   const monsterIds = camp.namedId
                     ? [...camp.monsters, camp.namedId]
                     : camp.monsters;
+                  const campMonsterLevels = monsterIds.flatMap((id) => {
+                    const level = monstersById[id]?.level;
+                    return level === undefined ? [] : [level];
+                  });
+                  const campLevel = campMonsterLevels.length > 0
+                    ? Math.min(...campMonsterLevels)
+                    : zone.levelRange[0];
                   const monsterNames = monsterIds.map(
                     (id) => game.seenMonsters.includes(id) ? monstersById[id]?.name ?? '???' : '???',
                   );
@@ -141,6 +164,9 @@ export function ZoneBoard({ game, onStartCamp, onRecall, onViewLog }: ZoneBoardP
                     <article className="camp-card" key={camp.id}>
                       <h4>{camp.name}</h4>
                       <p>Monsters: {monsterNames.join(', ')}</p>
+                      <p>
+                        Camp con: <ConBadge con={conTier(campLevel, conLevels)} />
+                      </p>
                       <p>Named spawn chance: {camp.namedId ? formatChance(camp.namedChance) : 'None'}</p>
                       <p>Respawn: {camp.respawnSec} seconds</p>
                       {dropList.length > 0 && (
@@ -184,7 +210,10 @@ export function ZoneBoard({ game, onStartCamp, onRecall, onViewLog }: ZoneBoardP
       <section aria-labelledby="active-camps-heading" className="active-camps">
         <h3 id="active-camps-heading">Active camps</h3>
         {activeCamps.length === 0 ? (
-          <p>No active camps.</p>
+          <>
+            <p>No active camps.</p>
+            <p>Choose eligible heroes above and start a camp to hunt monsters.</p>
+          </>
         ) : (
           activeCamps.map((activity) => {
             const camp = campsById[activity.campId];

@@ -31,6 +31,7 @@ function expectCurrentShape(state: GameState) {
       'materials',
       'nextId',
       'nextLogId',
+      'onboarding',
       'recruitment',
       'rng',
       'seenMonsters',
@@ -132,6 +133,13 @@ describe('save format', () => {
     });
   });
 
+  it('adds onboarding defaults when migrating the v8 save', () => {
+    const fixture = fixtureFiles['./fixtures/v8.json'];
+    const state = loadEnvelope(JSON.stringify(fixture));
+
+    expect(state.onboarding).toEqual({ dismissed: true });
+  });
+
   it('round-trips JSON and UTF-8 base64 saves', () => {
     const state = createNewGame({
       seed: 42,
@@ -165,6 +173,7 @@ describe('save format', () => {
     expect(isGameState({ ...state, materials: { 'copper-ore': 0 } })).toBe(false);
     expect(isGameState({ ...state, seenMonsters: [1] })).toBe(false);
     expect(isGameState({ ...state, seenMonsters: ['unknown-monster'] })).toBe(false);
+    expect(isGameState({ ...state, onboarding: { dismissed: 'no' } })).toBe(false);
     expect(
       isGameState({
         ...state,

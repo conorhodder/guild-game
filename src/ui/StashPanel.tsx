@@ -73,7 +73,10 @@ export function StashPanel({ game, onSell, onSellMaterial }: StashPanelProps) {
       <section aria-labelledby="stash-items-heading">
         <h3 id="stash-items-heading">Items</h3>
         {gear.length === 0 ? (
-          <p>The stash is empty.</p>
+          <>
+            <p>The stash is empty.</p>
+            <p>Complete quests or camps to find equipment.</p>
+          </>
         ) : (
           <ul className="stash-list">
             {gear.map(({ instance, item }) => (
@@ -91,7 +94,10 @@ export function StashPanel({ game, onSell, onSellMaterial }: StashPanelProps) {
       <section aria-labelledby="stash-materials-heading">
         <h3 id="stash-materials-heading">Materials</h3>
         {materials.length === 0 ? (
-          <p>No materials.</p>
+          <>
+            <p>No materials.</p>
+            <p>Start Mining or Herbalism in Gathering to collect materials.</p>
+          </>
         ) : (
           <ul className="stash-list">
             {materials.map(({ item, quantity }) => (

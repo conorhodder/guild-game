@@ -34,7 +34,7 @@ interface RosterPanelProps {
 }
 
 function formatStat(value: number): string {
-  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+  return String(Math.round(value));
 }
 
 function signedDelta(value: number): string {
@@ -134,23 +134,23 @@ function HeroSheet({
         </div>
         <div>
           <dt>Fatigue</dt>
-          <dd>{hero.fatigue} — {fatigueLabel(hero.fatigue)}</dd>
+          <dd>{Math.floor(hero.fatigue)} — {fatigueLabel(hero.fatigue)}</dd>
         </div>
         <div>
           <dt>Max HP</dt>
-          <dd>{stats.maxHp}</dd>
+          <dd>{Math.round(stats.maxHp)}</dd>
         </div>
         <div>
           <dt>Attack</dt>
-          <dd>{stats.attack}</dd>
+          <dd>{Math.round(stats.attack)}</dd>
         </div>
         <div>
           <dt>Armor</dt>
-          <dd>{stats.armor}</dd>
+          <dd>{Math.round(stats.armor)}</dd>
         </div>
         <div>
           <dt>Heal</dt>
-          <dd>{stats.heal}</dd>
+          <dd>{Math.round(stats.heal)}</dd>
         </div>
       </dl>
 
@@ -179,64 +179,68 @@ function HeroSheet({
       <section aria-labelledby="hero-gear-heading">
         <h4 id="hero-gear-heading">Gear</h4>
         <div className="hero-gear">
-          {gearSlots.map((slot) => (
-            <section className="gear-slot" key={slot.id}>
-              <h5>{slot.label}: {equippedItemName(slot.id)}</h5>
-              <label htmlFor={`equip-${hero.id}-${slot.id}`}>Choose {slot.label.toLowerCase()}</label>
-              <select
-                id={`equip-${hero.id}-${slot.id}`}
-                onChange={(event) =>
-                  setSelectedItems((current) => ({ ...current, [slot.id]: event.target.value }))
-                }
-                value={selectedItems[slot.id] ?? ''}
-              >
-                <option value="">Choose an item</option>
-                {stashItems.map(({ instance, item }) => {
-                  const reason = getEquipReason(game, hero.id, instance.uid, slot.id);
+          {gearSlots.map((slot) => {
+            const slotItems = stashItems.filter(({ item }) => item.slot === slot.id);
+            return (
+              <section className="gear-slot" key={slot.id}>
+                <h5>{slot.label}: {equippedItemName(slot.id)}</h5>
+                <label htmlFor={`equip-${hero.id}-${slot.id}`}>Choose {slot.label.toLowerCase()}</label>
+                {slotItems.length === 0 && <p>No items for this slot in the stash.</p>}
+                <select
+                  id={`equip-${hero.id}-${slot.id}`}
+                  onChange={(event) =>
+                    setSelectedItems((current) => ({ ...current, [slot.id]: event.target.value }))
+                  }
+                  value={selectedItems[slot.id] ?? ''}
+                >
+                  <option value="">Choose an item</option>
+                  {slotItems.map(({ instance, item }) => {
+                    const reason = getEquipReason(game, hero.id, instance.uid, slot.id);
+                    return (
+                      <option disabled={reason !== null} key={instance.uid} value={instance.uid}>
+                        {item.name}{reason ? ` — ${reason}` : ''}
+                      </option>
+                    );
+                  })}
+                </select>
+                {hero.equipment[slot.id] && (
+                  <button onClick={() => unequipSlot(slot.id)} type="button">
+                    Unequip {slot.label.toLowerCase()}
+                  </button>
+                )}
+                {selectedItems[slot.id] && (() => {
+                  const preview = getEquipPreview(game, hero.id, selectedItems[slot.id] ?? '');
+                  if ('reason' in preview) {
+                    return <p role="alert">{preview.reason}</p>;
+                  }
                   return (
-                    <option disabled={reason !== null} key={instance.uid} value={instance.uid}>
-                      {item.name}{reason ? ` — ${reason}` : ''}
-                    </option>
+                    <div aria-label={`${slot.label} stat preview`} className="equip-preview">
+                      <p>Before → After</p>
+                      <ul>
+                        {([
+                          ['Max HP', 'maxHp'],
+                          ['Attack', 'attack'],
+                          ['Armor', 'armor'],
+                          ['Heal', 'heal'],
+                        ] as const).map(([label, key]) => (
+                          <li key={key}>
+                            {label}: {formatStat(preview.before[key])} → {formatStat(preview.after[key])}
+                            {' '}({signedDelta(preview.delta[key])})
+                          </li>
+                        ))}
+                      </ul>
+                      <button
+                        onClick={() => equipSelected(slot.id, selectedItems[slot.id] ?? '')}
+                        type="button"
+                      >
+                        Equip
+                      </button>
+                    </div>
                   );
-                })}
-              </select>
-              {hero.equipment[slot.id] && (
-                <button onClick={() => unequipSlot(slot.id)} type="button">
-                  Unequip {slot.label.toLowerCase()}
-                </button>
-              )}
-              {selectedItems[slot.id] && (() => {
-                const preview = getEquipPreview(game, hero.id, selectedItems[slot.id] ?? '');
-                if ('reason' in preview) {
-                  return <p role="alert">{preview.reason}</p>;
-                }
-                return (
-                  <div aria-label={`${slot.label} stat preview`} className="equip-preview">
-                    <p>Before → After</p>
-                    <ul>
-                      {([
-                        ['Max HP', 'maxHp'],
-                        ['Attack', 'attack'],
-                        ['Armor', 'armor'],
-                        ['Heal', 'heal'],
-                      ] as const).map(([label, key]) => (
-                        <li key={key}>
-                          {label}: {formatStat(preview.before[key])} → {formatStat(preview.after[key])}
-                          {' '}({signedDelta(preview.delta[key])})
-                        </li>
-                      ))}
-                    </ul>
-                    <button
-                      onClick={() => equipSelected(slot.id, selectedItems[slot.id] ?? '')}
-                      type="button"
-                    >
-                      Equip
-                    </button>
-                  </div>
-                );
-              })()}
-            </section>
-          ))}
+                })()}
+              </section>
+            );
+          })}
         </div>
       </section>
       {status === 'Idle' && hero.fatigue > 0 && (
@@ -276,7 +280,10 @@ export function RosterPanel({
     <section aria-labelledby="roster-heading" className="roster">
       <h2 id="roster-heading">Roster</h2>
       {heroes.length === 0 ? (
-        <p>Your roster is empty.</p>
+        <>
+          <p>Your roster is empty.</p>
+          <p>Visit Recruitment to hire your first heroes.</p>
+        </>
       ) : (
         <div className="roster-layout">
           <ul aria-label="Heroes" className="hero-list">
@@ -292,7 +299,7 @@ export function RosterPanel({
                 >
                   {hero.glyph} {hero.name} · {classes[hero.classId].name} · Level {hero.level}
                   <span>
-                    {statusText(hero, game)} · Fatigue {hero.fatigue} — {fatigueLabel(hero.fatigue)}
+                    {statusText(hero, game)} · Fatigue {Math.floor(hero.fatigue)} — {fatigueLabel(hero.fatigue)}
                   </span>
                 </button>
               </li>

@@ -70,6 +70,39 @@ h1 {
   margin-top: 1.5rem;
 }
 
+.guild-charter {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #786744;
+  border-radius: 0.35rem;
+  background: #201c17;
+}
+
+.guild-charter h2 {
+  margin: 0;
+  color: #f0c869;
+}
+
+.guild-charter ul {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guild-charter-complete {
+  color: #a9d6a9;
+}
+
+.guild-charter-complete span {
+  font-weight: 700;
+}
+
 .tab-list,
 .button-row {
   display: flex;
@@ -474,6 +507,35 @@ select {
   font-weight: 700;
 }
 
+.quest-card-recommended {
+  border-color: #f0c869;
+}
+
+.recommended-quest-label {
+  width: fit-content;
+  margin: 0;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid #f0c869;
+  border-radius: 0.25rem;
+  color: #f0c869;
+  font-weight: 700;
+}
+
+.con-help {
+  margin: 0.75rem 0;
+  color: #b8b09a;
+}
+
+.con-help summary {
+  width: fit-content;
+  color: #e8e2cf;
+  cursor: pointer;
+}
+
+.con-help li {
+  margin-top: 0.25rem;
+}
+
 .active-quests {
   display: grid;
   gap: 1rem;
@@ -681,6 +743,10 @@ select {
 }
 
 @media (max-width: 760px) {
+  .guild-charter {
+    flex-direction: column;
+  }
+
   .ledger-definitions {
     grid-template-columns: minmax(8rem, 1fr) 1.5fr;
   }

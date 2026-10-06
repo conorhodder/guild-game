@@ -22,12 +22,23 @@ function formatRemaining(ms: number): string {
 }
 
 export function QuestBoard({ game, onDispatch, onViewLog }: QuestBoardProps) {
-  const [selectedHeroIds, setSelectedHeroIds] = useState<string[]>([]);
+  const hasDispatched =
+    game.ledger.firstDispatchAt !== null || game.ledger.firstDispatchWall !== null;
+  const [selectedHeroIds, setSelectedHeroIds] = useState<string[]>(() =>
+    hasDispatched
+      ? []
+      : game.heroOrder
+          .slice(0, 3)
+          .filter((heroId) => getQuestEligibilityReason(game, heroId) === null),
+  );
   const [error, setError] = useState('');
   const heroes = game.heroOrder.flatMap((heroId) => {
     const hero = game.heroes[heroId];
     return hero ? [hero] : [];
   });
+  const eligibleHeroes = heroes.filter(
+    (hero) => getQuestEligibilityReason(game, hero.id) === null,
+  );
   const selectedLevels = selectedHeroIds.flatMap((heroId) => {
     const hero = game.heroes[heroId];
     return hero ? [hero.level] : [];
@@ -61,6 +72,9 @@ export function QuestBoard({ game, onDispatch, onViewLog }: QuestBoardProps) {
       <h2 id="quests-heading">Quests</h2>
       <fieldset className="quest-party">
         <legend>Choose your party (1–4 heroes)</legend>
+        {eligibleHeroes.length === 0 && (
+          <p>No eligible heroes. Rest or wait for recovery before dispatching.</p>
+        )}
         {heroes.map((hero) => {
           const reason = getQuestEligibilityReason(game, hero.id);
           const selected = selectedHeroIds.includes(hero.id);
@@ -101,11 +115,16 @@ export function QuestBoard({ game, onDispatch, onViewLog }: QuestBoardProps) {
             selectedHeroIds.length >= 1 &&
             selectedHeroIds.length <= 4 &&
             selectedHeroIds.every((heroId) => getQuestEligibilityReason(game, heroId) === null);
+          const recommended = !hasDispatched && quest.firstQuest === true;
 
           return (
-            <article className="quest-card" key={quest.id}>
+            <article
+              className={recommended ? 'quest-card quest-card-recommended' : 'quest-card'}
+              key={quest.id}
+            >
               <h3>{quest.name}</h3>
               {quest.firstQuest && <p className="first-quest-label">Easy first quest</p>}
+              {recommended && <p className="recommended-quest-label">Recommended</p>}
               <p>
                 Recommended level: {quest.level}
                 {' '}
@@ -132,7 +151,10 @@ export function QuestBoard({ game, onDispatch, onViewLog }: QuestBoardProps) {
       <section aria-labelledby="active-quests-heading" className="active-quests">
         <h3 id="active-quests-heading">Active quests</h3>
         {activeQuests.length === 0 ? (
-          <p>No active quests.</p>
+          <>
+            <p>No active quests.</p>
+            <p>Choose eligible heroes above and dispatch a quest to get started.</p>
+          </>
         ) : (
           activeQuests.map((activity) => {
             if (activity.kind !== 'quest') return null;

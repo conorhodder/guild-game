@@ -22,7 +22,7 @@ import type {
 import { createGuildLedger } from '../game/systems/ledger';
 
 export const SAVE_KEY = 'guildmasters-ledger.save';
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 9;
 
 export interface SaveEnvelope {
   format: 'tgl-save';
@@ -160,6 +160,20 @@ export const migrations: Record<number, Migration> = {
           ...defaults.namedMonstersSlainById,
           ...previousNamedKills,
         },
+      },
+    };
+  },
+  8: (state) => {
+    if (!isRecord(state)) return state;
+    const onboarding = isRecord(state.onboarding) ? state.onboarding : {};
+    return {
+      ...state,
+      onboarding: {
+        ...onboarding,
+        dismissed:
+          typeof onboarding.dismissed === 'boolean'
+            ? onboarding.dismissed
+            : state.guildName !== '',
       },
     };
   },
@@ -451,6 +465,7 @@ export function isGameState(value: unknown): value is GameState {
     !isRecord(value.itemInstances) ||
     !isRecord(value.stash) ||
     !isRecord(value.recruitment) ||
+    !isRecord(value.onboarding) ||
     !isRecord(value.ledger) ||
     !Array.isArray(value.seenMonsters)
   ) {
@@ -529,6 +544,7 @@ export function isGameState(value: unknown): value is GameState {
     ).size >= 2 &&
     typeof value.recruitment.refreshAt === 'number' &&
     Number.isFinite(value.recruitment.refreshAt) &&
+    typeof value.onboarding.dismissed === 'boolean' &&
     value.recruitment.refreshAt >= 0 &&
     isRecord(value.materials) &&
     Object.entries(value.materials).every(

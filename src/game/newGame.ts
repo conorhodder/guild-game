@@ -36,6 +36,9 @@ export function createNewGame({ seed, wallMs, guildName }: NewGameOptions): Game
       candidates: [],
       refreshAt: RECRUITMENT_REFRESH_MS,
     },
+    onboarding: {
+      dismissed: false,
+    },
     ledger: createGuildLedger(wallMs),
     log: [],
     nextLogId: 1,

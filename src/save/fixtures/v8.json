@@ -1,0 +1,239 @@
+{
+  "format": "tgl-save",
+  "version": 8,
+  "savedAt": 1700000060000,
+  "state": {
+    "guildName": "The Lantern Company",
+    "gold": 50,
+    "clock": {
+      "simMs": 0,
+      "lastWallMs": 1700000000000
+    },
+    "rng": 376152906,
+    "nextId": 11,
+    "heroes": {
+      "h1": {
+        "id": "h1",
+        "name": "Sella Northmere",
+        "classId": "warrior",
+        "glyph": "🛡️",
+        "flavour": "Keeps a careful journal of every road taken.",
+        "level": 1,
+        "xp": 0,
+        "skills": {
+          "offense": 7,
+          "defense": 7
+        },
+        "gather": {
+          "mining": 1,
+          "herbalism": 1
+        },
+        "equipment": {
+          "mainHand": "i4",
+          "offHand": "i5",
+          "body": "i6"
+        },
+        "fatigue": 0,
+        "activityId": null,
+        "injuredUntil": null
+      },
+      "h2": {
+        "id": "h2",
+        "name": "Perrin Sablebrook",
+        "classId": "cleric",
+        "glyph": "✚",
+        "flavour": "Never travels without a whetstone.",
+        "level": 1,
+        "xp": 0,
+        "skills": {
+          "offense": 7,
+          "defense": 7,
+          "healing": 7
+        },
+        "gather": {
+          "mining": 1,
+          "herbalism": 1
+        },
+        "equipment": {
+          "mainHand": "i7",
+          "body": "i8"
+        },
+        "fatigue": 0,
+        "activityId": null,
+        "injuredUntil": null
+      },
+      "h3": {
+        "id": "h3",
+        "name": "Tavian Briarwell",
+        "classId": "rogue",
+        "glyph": "🗡️",
+        "flavour": "Always offers the first cup of tea.",
+        "level": 1,
+        "xp": 0,
+        "skills": {
+          "offense": 7,
+          "defense": 7,
+          "backstab": 7
+        },
+        "gather": {
+          "mining": 1,
+          "herbalism": 1
+        },
+        "equipment": {
+          "mainHand": "i9",
+          "body": "i10"
+        },
+        "fatigue": 0,
+        "activityId": null,
+        "injuredUntil": null
+      }
+    },
+    "heroOrder": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "activities": {},
+    "itemInstances": {
+      "i4": {
+        "uid": "i4",
+        "itemId": "warrior-iron-sword"
+      },
+      "i5": {
+        "uid": "i5",
+        "itemId": "warrior-wooden-shield"
+      },
+      "i6": {
+        "uid": "i6",
+        "itemId": "warrior-chain-shirt"
+      },
+      "i7": {
+        "uid": "i7",
+        "itemId": "cleric-bronze-mace"
+      },
+      "i8": {
+        "uid": "i8",
+        "itemId": "cleric-wool-robe"
+      },
+      "i9": {
+        "uid": "i9",
+        "itemId": "rogue-rusty-dagger"
+      },
+      "i10": {
+        "uid": "i10",
+        "itemId": "rogue-leather-coat"
+      }
+    },
+    "stash": {},
+    "materials": {},
+    "seenMonsters": [],
+    "recruitment": {
+      "candidates": [
+        {
+          "id": "r1-0",
+          "name": "Torren Stone",
+          "classId": "wizard",
+          "glyph": "🔮",
+          "flavour": "Can mend a cloak with almost any thread.",
+          "level": 1,
+          "xp": 0,
+          "skills": {
+            "offense": 7,
+            "defense": 7,
+            "evocation": 7
+          },
+          "gather": {
+            "mining": 1,
+            "herbalism": 1
+          },
+          "equipment": {},
+          "fatigue": 0,
+          "activityId": null,
+          "injuredUntil": null
+        },
+        {
+          "id": "r1-1",
+          "name": "Orrin Mossvale",
+          "classId": "wizard",
+          "glyph": "🔮",
+          "flavour": "Keeps a careful journal of every road taken.",
+          "level": 1,
+          "xp": 0,
+          "skills": {
+            "offense": 7,
+            "defense": 7,
+            "evocation": 7
+          },
+          "gather": {
+            "mining": 1,
+            "herbalism": 1
+          },
+          "equipment": {},
+          "fatigue": 0,
+          "activityId": null,
+          "injuredUntil": null
+        },
+        {
+          "id": "r1-2",
+          "name": "Torren Sablebrook",
+          "classId": "rogue",
+          "glyph": "🗡️",
+          "flavour": "Always offers the first cup of tea.",
+          "level": 1,
+          "xp": 0,
+          "skills": {
+            "offense": 7,
+            "defense": 7,
+            "backstab": 7
+          },
+          "gather": {
+            "mining": 1,
+            "herbalism": 1
+          },
+          "equipment": {},
+          "fatigue": 0,
+          "activityId": null,
+          "injuredUntil": null
+        }
+      ],
+      "refreshAt": 1800000
+    },
+    "ledger": {
+      "firstLoadWall": 1700000000000,
+      "firstDispatchWall": null,
+      "firstDispatchAt": null,
+      "firstQuestCompleteAt": null,
+      "sessions": 0,
+      "lastActiveWall": 1700000000000,
+      "playDays": [],
+      "kills": 0,
+      "namedKills": 0,
+      "namedDrops": 0,
+      "highestLevel": 1,
+      "questsCompleted": 0,
+      "questsFailed": 0,
+      "goldEarned": 0,
+      "itemsByRarity": {
+        "common": 0,
+        "uncommon": 0,
+        "rare": 0,
+        "named": 0
+      },
+      "knockouts": 0,
+      "skillUps": 0,
+      "levelsGained": 0,
+      "totalSimMsPlayed": 0,
+      "namedMonstersSlainById": {}
+    },
+    "log": [
+      {
+        "id": 1,
+        "simMs": 0,
+        "channel": "guild",
+        "category": "system",
+        "text": "Welcome to The Lantern Company. Your adventurers are ready."
+      }
+    ],
+    "nextLogId": 2
+  }
+}

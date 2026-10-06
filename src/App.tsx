@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   dismiss,
   dispatchQuest,
@@ -18,6 +18,7 @@ import { campsById } from './game/data/zones';
 import { questsById } from './game/data/quests';
 import { SettingsPanel } from './ui/SettingsPanel';
 import { FoundGuildForm } from './ui/FoundGuildForm';
+import { GuildCharter } from './ui/GuildCharter';
 import { AwaySummaryDialog } from './ui/AwaySummaryDialog';
 import { GatherBoard } from './ui/GatherBoard';
 import { LogPanel } from './ui/LogPanel';
@@ -44,6 +45,32 @@ export default function App() {
   const [logChannel, setLogChannel] = useState('all');
   const [activeTab, setActiveTab] = useState('roster');
   const [selectedHeroId, setSelectedHeroId] = useState<string | null>(null);
+  const [heroesViewed, setHeroesViewed] = useState(false);
+  const [logOpened, setLogOpened] = useState(false);
+  const onboardingComplete = Boolean(
+    game &&
+      game.guildName !== '' &&
+      heroesViewed &&
+      game.ledger.firstDispatchAt !== null &&
+      logOpened,
+  );
+  const onboardingDismissed = game?.onboarding.dismissed ?? true;
+
+  function selectTab(tabId: string) {
+    setActiveTab(tabId);
+    if (tabId === 'log') setLogOpened(true);
+  }
+
+  function selectHero(heroId: string) {
+    setSelectedHeroId(heroId);
+    setHeroesViewed(true);
+  }
+
+  useEffect(() => {
+    if (onboardingComplete && !onboardingDismissed) {
+      gameStore.dismissOnboarding();
+    }
+  }, [onboardingComplete, onboardingDismissed]);
 
   if (!game) {
     return (
@@ -131,8 +158,16 @@ export default function App() {
           <p className="sim-clock">{formatSimClock(game.clock.simMs)}</p>
         </div>
       </header>
+      {!game.onboarding.dismissed && (
+        <GuildCharter
+          heroesViewed={heroesViewed}
+          logOpened={logOpened}
+          onDismiss={gameStore.dismissOnboarding}
+          questDispatched={game.ledger.firstDispatchAt !== null}
+        />
+      )}
       <Tabs
-        onSelect={setActiveTab}
+        onSelect={selectTab}
         selectedId={activeTab}
         tabs={[
           {
@@ -145,7 +180,7 @@ export default function App() {
                 onUnequip={(heroId, slot) => gameStore.dispatch(unequip(heroId, slot))}
                 onRest={(heroId) => gameStore.dispatch(rest(heroId))}
                 onRecall={(activityId) => gameStore.dispatch(recall(activityId))}
-                onHeroSelect={setSelectedHeroId}
+                onHeroSelect={selectHero}
                 selectedHeroId={selectedHeroId}
               />
             ),
@@ -161,7 +196,7 @@ export default function App() {
                 }
                 onViewLog={(channel) => {
                   setLogChannel(channel);
-                  setActiveTab('log');
+                  selectTab('log');
                 }}
               />
             ),
@@ -178,7 +213,7 @@ export default function App() {
                 onRecall={(activityId) => gameStore.dispatch(recall(activityId))}
                 onViewLog={(channel) => {
                   setLogChannel(channel);
-                  setActiveTab('log');
+                  selectTab('log');
                 }}
               />
             ),
@@ -253,8 +288,8 @@ export default function App() {
         <AwaySummaryDialog
           onDismiss={dismissAwaySummary}
           onGoToHero={(heroId) => {
-            setSelectedHeroId(heroId);
-            setActiveTab('roster');
+            selectHero(heroId);
+            selectTab('roster');
           }}
           summary={awaySummary}
         />

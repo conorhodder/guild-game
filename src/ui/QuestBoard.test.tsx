@@ -14,6 +14,8 @@ describe('QuestBoard', () => {
     const heroId = game.heroOrder[0];
     const hero = heroId ? game.heroes[heroId] : undefined;
     if (!heroId || !hero) throw new Error('Expected a starter hero.');
+    game.ledger.firstDispatchAt = 1;
+    game.ledger.firstDispatchWall = 1;
     const unavailableId = game.heroOrder[1];
     if (unavailableId) game.heroes[unavailableId]!.injuredUntil = 60_000;
     const onViewLog = vi.fn();
@@ -67,5 +69,27 @@ describe('QuestBoard', () => {
       .getByRole('heading', { name: 'Rats in the Cellar' })
       .closest('article');
     expect(firstQuestCard?.textContent).toContain('Recommended level: 1 Trivial');
+  });
+
+  it('preselects the starter party and recommends the first quest before any dispatch', () => {
+    const game = foundGuild('The Wayfarers')(
+      createNewGame({ seed: 42, wallMs: 0, guildName: '' }),
+    );
+
+    render(<QuestBoard game={game} onDispatch={vi.fn(() => null)} onViewLog={vi.fn()} />);
+
+    for (const heroId of game.heroOrder) {
+      const hero = game.heroes[heroId];
+      if (!hero) throw new Error('Expected a starter hero.');
+      expect(screen.getByRole('checkbox', { name: new RegExp(hero.name) })).toHaveProperty(
+        'checked',
+        true,
+      );
+    }
+    expect(screen.getByText('Recommended')).toBeDefined();
+    expect(
+      (screen.getByRole('button', { name: 'Dispatch Rats in the Cellar' }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(false);
   });
 });

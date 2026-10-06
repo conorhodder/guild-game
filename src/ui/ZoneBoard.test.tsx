@@ -43,6 +43,11 @@ describe('ZoneBoard', () => {
       <ZoneBoard game={game} onStartCamp={onStartCamp} onRecall={onRecall} onViewLog={onViewLog} />,
     );
 
+    const reedlands = screen.getByRole('heading', { name: 'The Reedlands' }).closest('article');
+    expect(reedlands?.textContent).toContain('Levels 1–7 Even');
+    expect(reedlands?.textContent).toContain('Camp con: Even');
+    fireEvent.click(screen.getByText('What do the colours mean?'));
+    expect(screen.getByText('Trivial: target is at least 5 levels below the party.')).toBeDefined();
     expect(screen.getAllByText('Monsters: ???, ???, ???').length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole('checkbox', { name: new RegExp(hero.name) }));
     fireEvent.click(screen.getByRole('button', { name: 'Start at Marsh Edge' }));

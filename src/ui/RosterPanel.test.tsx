@@ -1,8 +1,9 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { foundGuild } from '../game/actions';
 import { createItemInstance } from '../game/itemIds';
 import { createNewGame } from '../game/newGame';
+import { heroStats } from '../game/systems/heroes';
 import { RosterPanel } from './RosterPanel';
 
 afterEach(() => cleanup());
@@ -53,6 +54,7 @@ describe('RosterPanel', () => {
     const heroId = game.heroOrder[0];
     const hero = heroId ? game.heroes[heroId] : undefined;
     if (!hero) throw new Error('Expected a starter hero.');
+    hero.level = 2;
     const instance = createItemInstance(game, 'copper-band');
     game.itemInstances[instance.uid] = instance;
     game.stash[instance.uid] = instance;
@@ -72,8 +74,8 @@ describe('RosterPanel', () => {
     });
 
     expect(screen.getByText('Before → After')).toBeDefined();
-    expect(screen.getByText('Max HP: 68 → 72 (+4)')).toBeDefined();
-    expect(screen.getByText('Attack: 8 → 8 (+0)')).toBeDefined();
+    expect(screen.getByText('Max HP: 80 → 84 (+4)')).toBeDefined();
+    expect(screen.getByText('Attack: 10 → 10 (+0)')).toBeDefined();
     fireEvent.click(screen.getByRole('button', { name: 'Equip' }));
     expect(onEquip).toHaveBeenCalledWith(hero.id, instance.uid);
   });
@@ -103,6 +105,32 @@ describe('RosterPanel', () => {
     );
   });
 
+  it('floors fatigue and rounds displayed hero stats without changing internal values', () => {
+    const game = foundGuild('The Wayfarers')(
+      createNewGame({ seed: 42, wallMs: 0, guildName: '' }),
+    );
+    const hero = game.heroes[game.heroOrder[0] ?? ''];
+    if (!hero) throw new Error('Expected a starter hero.');
+    hero.level = 2;
+    hero.fatigue = 98.8416666666914;
+    const stats = heroStats(hero, game);
+
+    render(
+      <RosterPanel
+        game={game}
+        onEquip={vi.fn(() => null)}
+        onUnequip={vi.fn(() => null)}
+        onRest={vi.fn(() => null)}
+        onRecall={vi.fn(() => null)}
+      />,
+    );
+
+    expect(stats.attack).toBe(9.5);
+    expect(screen.getAllByText('98 — Weary').length).toBeGreaterThan(0);
+    expect(screen.getByText('10')).toBeDefined();
+    expect(screen.queryByText('9.5')).toBeNull();
+  });
+
   it('disables invalid picker entries and explains the restriction', () => {
     const game = foundGuild('The Wayfarers')(
       createNewGame({ seed: 42, wallMs: 0, guildName: '' }),
@@ -125,6 +153,31 @@ describe('RosterPanel', () => {
       name: 'Rusted Dagger — Not available to warrior.',
     }) as HTMLOptionElement;
     expect(option.disabled).toBe(true);
+  });
+
+  it('shows only matching-slot items and names empty stash slots', () => {
+    const game = foundGuild('The Wayfarers')(
+      createNewGame({ seed: 42, wallMs: 0, guildName: '' }),
+    );
+    const instance = createItemInstance(game, 'rogue-rusty-dagger');
+    game.itemInstances[instance.uid] = instance;
+    game.stash[instance.uid] = instance;
+
+    render(
+      <RosterPanel
+        game={game}
+        onEquip={vi.fn(() => null)}
+        onUnequip={vi.fn(() => null)}
+        onRest={vi.fn(() => null)}
+        onRecall={vi.fn(() => null)}
+      />,
+    );
+
+    const mainHand = screen.getByRole('combobox', { name: 'Choose main hand' });
+    const trinket = screen.getByRole('combobox', { name: 'Choose trinket' });
+    expect(within(mainHand).getByRole('option', { name: /Rusted Dagger/ })).toBeDefined();
+    expect(within(trinket).queryByRole('option', { name: /Rusted Dagger/ })).toBeNull();
+    expect(screen.getAllByText('No items for this slot in the stash.').length).toBe(3);
   });
 
   it('shows injury countdown and fatigue labels, with a Rest action', () => {

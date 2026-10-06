@@ -126,10 +126,12 @@ interface GameState {
   seenMonsters: string[];                          // for the named lookup (PRD §4.5)
   log: LogLine[]; nextLogId: number;
   ledger: Ledger;
-  onboarding: { dismissed: string[] };
+  onboarding: { dismissed: boolean };
 }
 ```
 
+- The guild charter appears for a new guild until dismissed or all three
+  onboarding steps are complete. Dismissal is stored in `onboarding.dismissed`.
 - Hero **status** is derived and never stored. It is *Injured* if
   `injuredUntil > simMs`, otherwise it comes from the kind of `activityId`
   (*On quest* / *Camping* / *Gathering* / *Resting*), otherwise *Idle*.

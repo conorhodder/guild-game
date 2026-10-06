@@ -47,7 +47,10 @@ export function GatherBoard({ game, onStartGather, onRecall }: GatherBoardProps)
       <section aria-labelledby="available-gatherers-heading">
         <h3 id="available-gatherers-heading">Available heroes</h3>
         {idleHeroes.length === 0 ? (
-          <p>No Idle heroes are available to gather.</p>
+          <>
+            <p>No Idle heroes are available to gather.</p>
+            <p>Recall a gatherer or wait for heroes to recover fatigue or injuries.</p>
+          </>
         ) : (
           <div className="gather-heroes">
             {idleHeroes.map((hero) => (
@@ -82,7 +85,10 @@ export function GatherBoard({ game, onStartGather, onRecall }: GatherBoardProps)
       <section aria-labelledby="active-gatherers-heading">
         <h3 id="active-gatherers-heading">Active gatherers</h3>
         {gatherers.length === 0 ? (
-          <p>No active gatherers.</p>
+          <>
+            <p>No active gatherers.</p>
+            <p>Choose an Idle hero above and start Mining or Herbalism.</p>
+          </>
         ) : (
           <div className="active-gatherers">
             {gatherers.map(({ activity, hero }) => (

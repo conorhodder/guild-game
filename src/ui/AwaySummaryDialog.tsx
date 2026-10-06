@@ -115,7 +115,7 @@ export function AwaySummaryDialog({
                         <ul>
                           {hero.skillUps.map((skill) => (
                             <li key={skill.skill}>
-                              {skill.skill}: {skill.count} skill-up{skill.count === 1 ? '' : 's'}{' '}
+                              {skill.skill[0]?.toUpperCase()}{skill.skill.slice(1)}: {skill.count} skill-up{skill.count === 1 ? '' : 's'}{' '}
                               (now {skill.value})
                             </li>
                           ))}

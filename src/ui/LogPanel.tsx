@@ -155,7 +155,10 @@ export function LogPanel({
         tabIndex={0}
       >
         {lines.length === 0 ? (
-          <p>No log entries match these filters.</p>
+          <>
+            <p>No log entries match these filters.</p>
+            <p>Change the category filters or channel to see other entries.</p>
+          </>
         ) : (
           <ol className="log-entries">
             {lines.map((line) => (

@@ -106,4 +106,20 @@ describe('AwaySummaryDialog', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(document.activeElement).toBe(trigger);
   });
+
+  it('capitalizes skill names like the guild log', () => {
+    const skillSummary = {
+      ...summary,
+      heroes: [
+        {
+          ...summary.heroes[0]!,
+          skillUps: [{ skill: 'defense', count: 5, value: 12 }],
+        },
+      ],
+    };
+
+    render(<DismissibleDialog summary={skillSummary} />);
+
+    expect(screen.getByText('Defense: 5 skill-ups (now 12)')).toBeDefined();
+  });
 });

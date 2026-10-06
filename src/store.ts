@@ -139,6 +139,16 @@ export class GameStore {
     this.notify();
   }
 
+  dismissOnboarding = (): void => {
+    if (!this.state || this.state.onboarding.dismissed) return;
+    this.state = {
+      ...this.state,
+      onboarding: { ...this.state.onboarding, dismissed: true },
+    };
+    this.saveNow();
+    this.notify();
+  };
+
   subscribe = (listener: () => void): (() => void) => {
     this.subscribers.add(listener);
     return () => this.subscribers.delete(listener);

@@ -52,6 +52,17 @@ describe('GameStore', () => {
     store.destroy();
   });
 
+  it('persists dismissal of the guild charter', () => {
+    const storage = new MemoryStorage();
+    const store = new GameStore({ storage, now: () => 100, seed: () => 1 });
+
+    store.dismissOnboarding();
+
+    expect(store.getState()?.onboarding.dismissed).toBe(true);
+    expect(loadEnvelope(storage.getItem(SAVE_KEY) ?? '').onboarding.dismissed).toBe(true);
+    store.destroy();
+  });
+
   it('dispatches item actions and returns rejection reasons without changing state', () => {
     const storage = new MemoryStorage();
     const game = foundGuild('The Wayfarers')(

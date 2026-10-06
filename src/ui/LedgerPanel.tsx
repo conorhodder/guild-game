@@ -83,7 +83,10 @@ export function LedgerPanel({ ledger }: LedgerPanelProps) {
       </dl>
       <h3>Named slain</h3>
       {namedSlain.length === 0 ? (
-        <p>None yet.</p>
+        <>
+          <p>None yet.</p>
+          <p>Explore zones and camps to discover named monsters.</p>
+        </>
       ) : (
         <ul>
           {namedSlain.map(([monsterId, count]) => (

@@ -80,6 +80,9 @@ export function RecruitBoard({ game, onHire, onDismiss }: RecruitBoardProps) {
       </div>
       <section aria-labelledby="dismiss-heading" className="recruit-roster">
         <h3 id="dismiss-heading">Guild roster ({heroes.length}/8)</h3>
+        {heroes.length >= 8 && (
+          <p>Your roster is full. Dismiss an Idle hero to make room for a recruit.</p>
+        )}
         {heroes.map((hero) => {
           const reason = getDismissReason(game, hero.id);
           return (
