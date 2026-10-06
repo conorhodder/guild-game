@@ -5,6 +5,30 @@ export type GatherSkill = 'mining' | 'herbalism';
 export type Slot = 'mainHand' | 'offHand' | 'body' | 'trinket';
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'named';
 export type Con = 'trivial' | 'easy' | 'even' | 'tough' | 'deadly';
+export type ItemSlot = Slot | 'material';
+
+export interface ItemStats {
+  attack?: number;
+  armor?: number;
+  hp?: number;
+  heal?: number;
+}
+
+export interface ItemData {
+  id: string;
+  name: string;
+  slot: ItemSlot;
+  rarity: Rarity;
+  levelReq: number;
+  classes: ClassId[] | 'all';
+  stats: ItemStats;
+  value: number;
+}
+
+export interface ItemInstance {
+  uid: string;
+  itemId: string;
+}
 
 export interface LogLine {
   id: number;
@@ -74,6 +98,9 @@ export interface GameState {
   heroes: Record<string, Hero>;
   heroOrder: string[];
   activities: Record<string, Activity>;
+  itemInstances: Record<string, ItemInstance>;
+  stash: Record<string, ItemInstance>;
+  materials: Record<string, number>;
   log: LogLine[];
   nextLogId: number;
 }

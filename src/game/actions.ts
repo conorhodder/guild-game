@@ -1,9 +1,25 @@
+import { itemsById, starterGear } from './data/items';
+import { createItemInstance } from './itemIds';
 import { rngPick } from './rng';
-import type { GameState } from './types';
+import type { GameState, Hero, ItemData, ItemInstance, Slot } from './types';
 import { appendLog } from './systems/log';
-import { createHero } from './systems/heroes';
+import { createHero, heroStatus } from './systems/heroes';
 
-export function foundGuild(name: string): (state: GameState) => GameState {
+export interface GameActionResult {
+  state: GameState;
+  reason?: string;
+}
+
+export type GameAction = (
+  state: GameState,
+  wallMs: number,
+) => GameState | GameActionResult;
+
+type EquipInspection =
+  | { hero: Hero; item: ItemData; instance: ItemInstance }
+  | { reason: string };
+
+export function foundGuild(name: string): (state: GameState, wallMs?: number) => GameState {
   const guildName = name.trim();
   if (guildName.length < 1 || guildName.length > 32) {
     throw new RangeError('Guild name must be between 1 and 32 characters.');
@@ -25,7 +41,161 @@ export function foundGuild(name: string): (state: GameState) => GameState {
       state.heroOrder.push(hero.id);
     }
 
+    for (const heroId of state.heroOrder) {
+      const hero = state.heroes[heroId];
+      if (!hero) continue;
+      for (const [slot, itemId] of Object.entries(starterGear[hero.classId])) {
+        if (!itemId) continue;
+        const instance = createItemInstance(state, itemId);
+        state.itemInstances[instance.uid] = instance;
+        hero.equipment[slot as Slot] = instance.uid;
+      }
+    }
+
     appendLog(state, 'guild', 'system', `Welcome to ${guildName}. Your adventurers are ready.`);
     return state;
+  };
+}
+
+function inspectEquip(
+  state: GameState,
+  heroId: string,
+  uid: string,
+  targetSlot?: Slot,
+): EquipInspection {
+  const hero = state.heroes[heroId];
+  if (!hero) return { reason: 'Hero not found.' };
+  if (heroStatus(hero, state) !== 'Idle') return { reason: 'Hero must be Idle to equip gear.' };
+
+  const instance = state.stash[uid];
+  if (!instance) return { reason: 'That item is not in the stash.' };
+  if (
+    instance.uid !== uid ||
+    state.itemInstances[uid]?.itemId !== instance.itemId
+  ) {
+    return { reason: 'That item instance is invalid.' };
+  }
+  const item = itemsById[instance.itemId];
+  if (!item) return { reason: 'That item is unknown.' };
+  if (item.slot === 'material') return { reason: 'Materials cannot be equipped.' };
+  if (targetSlot && item.slot !== targetSlot) return { reason: 'That item does not fit this slot.' };
+  if (hero.level < item.levelReq) {
+    return { reason: `Requires level ${item.levelReq}.` };
+  }
+  if (item.classes !== 'all' && !item.classes.includes(hero.classId)) {
+    return { reason: `Not available to ${hero.classId}.` };
+  }
+  if (
+    Object.values(state.heroes).some((otherHero) =>
+      Object.values(otherHero.equipment).includes(uid),
+    )
+  ) {
+    return { reason: 'That item is already equipped.' };
+  }
+
+  return { hero, item, instance };
+}
+
+export function getEquipReason(
+  state: GameState,
+  heroId: string,
+  uid: string,
+  targetSlot?: Slot,
+): string | null {
+  const inspection = inspectEquip(state, heroId, uid, targetSlot);
+  return 'reason' in inspection ? inspection.reason : null;
+}
+
+export function equip(heroId: string, uid: string): GameAction {
+  return (currentState) => {
+    const inspection = inspectEquip(currentState, heroId, uid);
+    if ('reason' in inspection) return { state: currentState, reason: inspection.reason };
+
+    const state = structuredClone(currentState);
+    const hero = state.heroes[heroId];
+    if (!hero) return { state: currentState, reason: 'Hero not found.' };
+    if (inspection.item.slot === 'material') {
+      return { state: currentState, reason: 'Materials cannot be equipped.' };
+    }
+    const slot = inspection.item.slot;
+    const previousUid = hero.equipment[slot];
+    if (previousUid) {
+      const previousInstance = state.itemInstances[previousUid];
+      if (!previousInstance || !itemsById[previousInstance.itemId]) {
+        return { state: currentState, reason: 'The equipped item instance is invalid.' };
+      }
+      state.stash[previousUid] = previousInstance;
+    }
+
+    delete state.stash[uid];
+    hero.equipment[slot] = uid;
+    return { state };
+  };
+}
+
+export function unequip(heroId: string, slot: Slot): GameAction {
+  return (currentState) => {
+    const hero = currentState.heroes[heroId];
+    if (!hero) return { state: currentState, reason: 'Hero not found.' };
+    if (heroStatus(hero, currentState) !== 'Idle') {
+      return { state: currentState, reason: 'Hero must be Idle to unequip gear.' };
+    }
+    const uid = hero.equipment[slot];
+    if (!uid) return { state: currentState, reason: 'There is no item in that slot.' };
+    const instance = currentState.itemInstances[uid];
+    if (!instance || !itemsById[instance.itemId]) {
+      return { state: currentState, reason: 'The equipped item instance is invalid.' };
+    }
+
+    const state = structuredClone(currentState);
+    const nextHero = state.heroes[heroId];
+    if (!nextHero) return { state: currentState, reason: 'Hero not found.' };
+    state.stash[uid] = instance;
+    delete nextHero.equipment[slot];
+    return { state };
+  };
+}
+
+export function sell(uid: string): GameAction {
+  return (currentState) => {
+    const instance = currentState.stash[uid];
+    if (!instance) return { state: currentState, reason: 'That item is not in the stash.' };
+    if (
+      instance.uid !== uid ||
+      currentState.itemInstances[uid]?.itemId !== instance.itemId
+    ) {
+      return { state: currentState, reason: 'That item instance is invalid.' };
+    }
+    const item = itemsById[instance.itemId];
+    if (!item || item.slot === 'material') {
+      return { state: currentState, reason: 'That item cannot be sold from the stash.' };
+    }
+
+    const state = structuredClone(currentState);
+    delete state.stash[uid];
+    delete state.itemInstances[uid];
+    state.gold += item.value;
+    return { state };
+  };
+}
+
+export function sellMaterial(itemId: string, quantity: number): GameAction {
+  return (currentState) => {
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      return { state: currentState, reason: 'Enter a positive whole quantity.' };
+    }
+    const item = itemsById[itemId];
+    if (!item || item.slot !== 'material') {
+      return { state: currentState, reason: 'That material cannot be sold.' };
+    }
+    const owned = currentState.materials[itemId] ?? 0;
+    if (owned < quantity) return { state: currentState, reason: 'Not enough materials.' };
+
+    const state = structuredClone(currentState);
+    const remaining = owned - quantity;
+    if (remaining === 0) delete state.materials[itemId];
+    else state.materials[itemId] = remaining;
+    state.gold += item.value * quantity;
+    return { state };
   };
 }

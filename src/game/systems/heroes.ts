@@ -1,4 +1,5 @@
 import { classes } from '../data/classes';
+import { itemsById } from '../data/items';
 import { familyNames, firstNames, flavourLines } from '../data/names';
 import { rngPick } from '../rng';
 import type { GameState, Hero, ClassId, GatherSkill, CombatSkill } from '../types';
@@ -82,7 +83,7 @@ export function heroStatus(hero: Hero, state: GameState): HeroStatus {
 export function heroStats(hero: Hero, state: GameState): HeroStats {
   const currentHero = state.heroes[hero.id] ?? hero;
   const classDefinition = classes[currentHero.classId];
-  return {
+  const result: HeroStats = {
     maxHp: classDefinition.baseHp + classDefinition.hpPerLevel * (currentHero.level - 1),
     attack:
       classDefinition.baseAttack +
@@ -90,6 +91,18 @@ export function heroStats(hero: Hero, state: GameState): HeroStats {
     armor: 0,
     heal: 0,
   };
+
+  for (const uid of Object.values(currentHero.equipment)) {
+    const instance = state.itemInstances[uid];
+    const item = instance ? itemsById[instance.itemId] : undefined;
+    if (!item) continue;
+    result.maxHp += item.stats.hp ?? 0;
+    result.attack += item.stats.attack ?? 0;
+    result.armor += item.stats.armor ?? 0;
+    result.heal += item.stats.heal ?? 0;
+  }
+
+  return result;
 }
 
 export function grantXp(state: GameState, heroId: string, amount: number, events: SimEvent[]): void {

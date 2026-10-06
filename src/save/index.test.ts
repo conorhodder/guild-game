@@ -25,10 +25,13 @@ function expectCurrentShape(state: GameState) {
       'guildName',
       'heroOrder',
       'heroes',
+      'itemInstances',
       'log',
+      'materials',
       'nextId',
       'nextLogId',
       'rng',
+      'stash',
     ].sort(),
   );
   expect(Object.keys(state.clock).sort()).toEqual(['lastWallMs', 'simMs']);
@@ -48,6 +51,16 @@ describe('save format', () => {
     expect(state.heroes).toEqual({});
     expect(state.heroOrder).toEqual([]);
     expect(state.activities).toEqual({});
+  });
+
+  it('migrates the v2 fixture with empty stash and materials', () => {
+    const fixture = fixtureFiles['./fixtures/v2.json'];
+    const state = loadEnvelope(JSON.stringify(fixture));
+
+    expect(state.stash).toEqual({});
+    expect(state.materials).toEqual({});
+    expect(state.itemInstances).toEqual({});
+    expect(Object.keys(state.heroes)).toHaveLength(3);
   });
 
   it('round-trips JSON and UTF-8 base64 saves', () => {
@@ -71,6 +84,16 @@ describe('save format', () => {
     });
 
     expect(() => loadEnvelope(newerSave)).toThrow(/newer game version/);
+  });
+
+  it('validates item instances, stash gear, and material quantities', () => {
+    const state = createNewGame({ seed: 1, wallMs: 2, guildName: '' });
+
+    expect(isGameState({ ...state, itemInstances: [] })).toBe(false);
+    expect(isGameState({ ...state, stash: { i1: { uid: 'i1', itemId: 'unknown' } } })).toBe(
+      false,
+    );
+    expect(isGameState({ ...state, materials: { 'copper-ore': 0 } })).toBe(false);
   });
 
   it('rejects garbage without changing the existing state', () => {

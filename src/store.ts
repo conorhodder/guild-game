@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import type { GameAction, GameActionResult } from './game/actions';
 import { syncToWall } from './game/clock';
 import { createNewGame } from './game/newGame';
 import type { GameState } from './game/types';
@@ -20,7 +21,13 @@ export interface GameStoreOptions {
   document?: Document;
 }
 
-export type GameAction = (state: GameState, wallMs: number) => GameState;
+export type { GameAction } from './game/actions';
+
+function isGameActionResult(
+  result: GameState | GameActionResult,
+): result is GameActionResult {
+  return 'state' in result;
+}
 
 function randomSeed(): number {
   const values = new Uint32Array(1);
@@ -84,11 +91,18 @@ export class GameStore {
     return () => this.subscribers.delete(listener);
   };
 
-  dispatch(action: GameAction): void {
+  dispatch(action: GameAction): string | null {
     if (!this.state) throw new Error('A new game must be started before dispatching actions.');
-    this.state = action(this.state, this.now());
+    const result = action(this.state, this.now());
+    if (isGameActionResult(result)) {
+      if (result.reason) return result.reason;
+      this.state = result.state;
+    } else {
+      this.state = result;
+    }
     this.saveNow();
     this.notify();
+    return null;
   }
 
   startNewGame(): void {

@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { equip, foundGuild } from './game/actions';
 import { OFFLINE_CAP_MS } from './game/clock';
+import { createItemInstance } from './game/itemIds';
 import { createNewGame } from './game/newGame';
 import { loadEnvelope, SAVE_KEY, serialize } from './save';
 import { GameStore } from './store';
@@ -50,6 +52,31 @@ describe('GameStore', () => {
 
     expect(store.getState()?.gold).toBe(55);
     expect(loadEnvelope(storage.getItem(SAVE_KEY) ?? '').gold).toBe(55);
+    store.destroy();
+  });
+
+  it('dispatches item actions and returns rejection reasons without changing state', () => {
+    const storage = new MemoryStorage();
+    const game = foundGuild('The Wayfarers')(
+      createNewGame({ seed: 42, wallMs: 100, guildName: '' }),
+    );
+    const heroId = game.heroOrder[0];
+    const hero = heroId ? game.heroes[heroId] : undefined;
+    if (!hero) throw new Error('Expected a starter hero.');
+    const instance = createItemInstance(game, 'copper-band');
+    game.itemInstances[instance.uid] = instance;
+    game.stash[instance.uid] = instance;
+    storage.setItem(SAVE_KEY, serialize(game, 100));
+    const store = new GameStore({ storage, now: () => 100, seed: () => 1 });
+
+    expect(store.dispatch(equip(hero.id, instance.uid))).toBeNull();
+    expect(store.getState()?.heroes[hero.id]?.equipment.trinket).toBe(instance.uid);
+
+    const current = store.getState();
+    expect(store.dispatch(equip(hero.id, 'i999'))).toBe(
+      'That item is not in the stash.',
+    );
+    expect(store.getState()).toBe(current);
     store.destroy();
   });
 

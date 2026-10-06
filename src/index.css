@@ -89,6 +89,7 @@ button[aria-selected='true'] {
 }
 
 button:focus-visible,
+select:focus-visible,
 textarea:focus-visible,
 [role='tabpanel']:focus-visible {
   outline: 2px solid #f0c869;
@@ -136,9 +137,20 @@ input {
   font: inherit;
 }
 
-input:focus-visible {
+input:focus-visible,
+select:focus-visible {
   outline: 2px solid #f0c869;
   outline-offset: 3px;
+}
+
+select {
+  width: 100%;
+  border: 1px solid #786744;
+  border-radius: 0.25rem;
+  padding: 0.75rem;
+  color: #e8e2cf;
+  background: #201c17;
+  font: inherit;
 }
 
 .found-guild {
@@ -199,6 +211,92 @@ input:focus-visible {
 
 .hero-sheet h3 {
   margin-top: 0;
+  color: #f0c869;
+}
+
+.gear-slot {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid #514733;
+  border-radius: 0.25rem;
+}
+
+.gear-slot h5 {
+  margin: 0;
+  color: #f0c869;
+}
+
+.equip-preview {
+  padding: 0.75rem;
+  border-left: 2px solid #f0c869;
+  background: #201c17;
+}
+
+.equip-preview p {
+  margin: 0 0 0.5rem;
+  color: #f0c869;
+}
+
+.equip-preview ul {
+  margin: 0 0 0.75rem;
+  padding-left: 1.25rem;
+}
+
+.stash {
+  max-width: 54rem;
+}
+
+.stash h2,
+.stash h3 {
+  color: #f0c869;
+}
+
+.stash-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.stash-list li {
+  padding: 1rem;
+  border: 1px solid #514733;
+  border-radius: 0.25rem;
+}
+
+.stash-list h4 {
+  margin: 0;
+}
+
+.stash-list input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0.25rem 0 0.75rem;
+}
+
+.item-rarity {
+  width: fit-content;
+  margin: 0.5rem 0;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.rarity-common {
+  color: #b8b09a;
+}
+
+.rarity-uncommon {
+  color: #73c58b;
+}
+
+.rarity-rare {
+  color: #79a9e5;
+}
+
+.rarity-named {
   color: #f0c869;
 }
 

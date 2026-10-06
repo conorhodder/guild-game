@@ -1,7 +1,8 @@
-import { foundGuild } from './game/actions';
+import { equip, foundGuild, sell, sellMaterial, unequip } from './game/actions';
 import { SettingsPanel } from './ui/SettingsPanel';
 import { FoundGuildForm } from './ui/FoundGuildForm';
 import { RosterPanel } from './ui/RosterPanel';
+import { StashPanel } from './ui/StashPanel';
 import { Tabs } from './ui/Tabs';
 import { gameStore, useGame, useSaveNotice } from './store';
 
@@ -69,7 +70,26 @@ export default function App() {
           {
             id: 'roster',
             label: 'Roster',
-            panel: <RosterPanel game={game} />,
+            panel: (
+              <RosterPanel
+                game={game}
+                onEquip={(heroId, uid) => gameStore.dispatch(equip(heroId, uid))}
+                onUnequip={(heroId, slot) => gameStore.dispatch(unequip(heroId, slot))}
+              />
+            ),
+          },
+          {
+            id: 'stash',
+            label: 'Stash',
+            panel: (
+              <StashPanel
+                game={game}
+                onSell={(uid) => gameStore.dispatch(sell(uid))}
+                onSellMaterial={(itemId, quantity) =>
+                  gameStore.dispatch(sellMaterial(itemId, quantity))
+                }
+              />
+            ),
           },
           {
             id: 'settings',

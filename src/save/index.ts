@@ -1,7 +1,17 @@
-import type { Activity, ClassId, GameState, Hero, LogCategory, LogLine, Slot } from '../game/types';
+import { itemsById } from '../game/data/items';
+import type {
+  Activity,
+  ClassId,
+  GameState,
+  Hero,
+  ItemInstance,
+  LogCategory,
+  LogLine,
+  Slot,
+} from '../game/types';
 
 export const SAVE_KEY = 'guildmasters-ledger.save';
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 export interface SaveEnvelope {
   format: 'tgl-save';
@@ -20,6 +30,15 @@ export const migrations: Record<number, Migration> = {
       heroes: state.heroes ?? {},
       heroOrder: state.heroOrder ?? [],
       activities: state.activities ?? {},
+    };
+  },
+  2: (state) => {
+    if (!isRecord(state)) return state;
+    return {
+      ...state,
+      itemInstances: state.itemInstances ?? {},
+      stash: state.stash ?? {},
+      materials: state.materials ?? {},
     };
   },
 };
@@ -145,8 +164,27 @@ function isActivity(value: unknown): value is Activity {
   );
 }
 
+function isItemInstance(value: unknown): value is ItemInstance {
+  return (
+    isRecord(value) &&
+    typeof value.uid === 'string' &&
+    /^i\d+$/.test(value.uid) &&
+    typeof value.itemId === 'string' &&
+    value.itemId.length > 0
+  );
+}
+
 export function isGameState(value: unknown): value is GameState {
-  if (!isRecord(value) || !isRecord(value.clock)) return false;
+  if (
+    !isRecord(value) ||
+    !isRecord(value.clock) ||
+    !isRecord(value.itemInstances) ||
+    !isRecord(value.stash)
+  ) {
+    return false;
+  }
+
+  const itemInstances = value.itemInstances;
 
   return (
     typeof value.guildName === 'string' &&
@@ -173,6 +211,39 @@ export function isGameState(value: unknown): value is GameState {
     isRecord(value.activities) &&
     Object.entries(value.activities).every(
       ([id, activity]) => isActivity(activity) && activity.id === id,
+    ) &&
+    Object.entries(value.itemInstances).every(
+      ([uid, item]) => isItemInstance(item) && item.uid === uid,
+    ) &&
+    Object.values(value.heroes).every(
+      (hero) =>
+        isHero(hero) &&
+        Object.entries(hero.equipment).every(([slot, uid]) => {
+          if (typeof uid !== 'string') return false;
+          const instance = itemInstances[uid];
+          return isItemInstance(instance) && itemsById[instance.itemId]?.slot === slot;
+        }),
+    ) &&
+    Object.entries(value.stash).every(
+      ([uid, item]) => {
+        if (!isItemInstance(item) || item.uid !== uid) return false;
+        const storedInstance = itemInstances[uid];
+        return (
+          itemsById[item.itemId]?.slot !== undefined &&
+          itemsById[item.itemId]?.slot !== 'material' &&
+          isItemInstance(storedInstance) &&
+          storedInstance.itemId === item.itemId
+        );
+      },
+    ) &&
+    isRecord(value.materials) &&
+    Object.entries(value.materials).every(
+      ([itemId, quantity]) =>
+        itemId.length > 0 &&
+        itemsById[itemId]?.slot === 'material' &&
+        typeof quantity === 'number' &&
+        Number.isInteger(quantity) &&
+        quantity > 0,
     ) &&
     Array.isArray(value.log) &&
     value.log.every(isLogLine) &&
