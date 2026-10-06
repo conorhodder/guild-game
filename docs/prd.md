@@ -13,9 +13,9 @@ covers the *why*, *for whom* and *how we will know it worked*. It deliberately
 carries no technical design: that belongs in the technical features and the
 living specification produced in `Specify`.
 
-Where this PRD relies on a working assumption that Conor has not confirmed, it
-is marked **(assumption: Qn)** and points to the matching entry in
-[Open questions for Conor](#12-open-questions-for-conor).
+Where a scope-changing decision was taken while framing, it is marked
+**(decision: Qn)** and points to the matching entry in
+[Resolved decisions](#12-resolved-decisions).
 
 ---
 
@@ -61,7 +61,7 @@ exists.
 
 ## 2. Product summary and core loop
 
-Guild Game is an **idle-ish guild manager** (assumption: Q1, Q2). The player is
+Guild Game is an **idle-ish guild manager** (decision: Q1, Q2). The player is
 the guild master and never fights directly. They recruit heroes, equip them,
 form parties and send them on timed **quests**, or to **camp** a spot in a
 dungeon. They also assign idle heroes to **gathering jobs**. Time passes, either
@@ -86,7 +86,7 @@ the log, re-gears and sends them out again.
 3. **Assign**: form parties of 1–4 heroes and send them on a quest or to a camp,
    assign individual heroes to a gathering job, or rest them.
 4. **Time passes**: activities resolve in real time, including while the game is
-   closed, up to the offline cap (assumption: Q2).
+   closed, up to the offline cap (decision: Q2).
 5. **Resolve**: combat and gathering happen without player input. Each outcome
    is written to a text log: hits, misses, heals, deaths, skill-ups, loot and
    level-ups ("dings").
@@ -112,9 +112,9 @@ Exact numbers belong in the specification. The **shape** of the model is set her
 | **Gear** | Four slots in MVP: **main hand**, **off hand**, **body**, **trinket**. Items have a level requirement, class restrictions, stats and a rarity tier: **Common**, **Uncommon**, **Rare** or **Named** (drops only from named monsters). |
 | **Health** | Full at the start of each activity. Reaching zero in combat means the hero is **knocked out**. |
 | **Fatigue** | 0–100. Rises during quests, camps and gathering, and falls while resting. Above **75**, heroes perform worse. At **100**, a hero can't be assigned until they have rested. |
-| **Injury / knockout** | A knocked-out hero comes back **injured** and can't be assigned for a recovery period. They also lose part of their XP progress towards the next level, but never drop a level. No permadeath in MVP (assumption: Q3). |
+| **Injury / knockout** | A knocked-out hero comes back **injured** and can't be assigned for a recovery period. They also lose part of their XP progress towards the next level, but never drop a level. No permadeath in MVP (decision: Q3). |
 | **Status** | Exactly one of: *Idle*, *On quest*, *Camping*, *Gathering*, *Resting*, *Injured*. |
-| **Identity** | Generated name, class, portrait glyph (assumption: Q4), and a short generated flavour line. |
+| **Identity** | Generated name, class, portrait glyph (decision: Q4), and a short generated flavour line. |
 
 Out of MVP but planned: morale and personality traits, more classes, hybrid
 classes, crafting skills, and more gear slots (see [Scope](#9-scope)).
@@ -216,7 +216,7 @@ The player is "guild master" throughout.
 | **Active session** | 10–30 minutes | Watch a camp's log live, swap heroes as fatigue builds, hunt a named, plan a new zone. |
 | **Quest duration** | 2–60 minutes of real time | Short quests for active play, longer ones to cover an absence. |
 | **Camp duration** | Open-ended, until recalled, retreated or capped by offline time | Overnight or workday farming. |
-| **Offline cap** | 12 hours (assumption: Q2) | Progress past the cap is not earned. |
+| **Offline cap** | 12 hours (decision: Q2) | Progress past the cap is not earned. |
 
 ### Key journeys
 
@@ -402,18 +402,18 @@ Delivery health is tracked with the five metrics in the Agentic SDLC
   level cap above 20.
 - Raids (parties larger than 4) and multi-stage dungeons.
 - Quest chains and light narrative.
-- Optional hardcore / permadeath mode (assumption: Q3).
+- Optional hardcore / permadeath mode (decision: Q3).
 - Bestiary/lore journal, achievements.
-- Sprite or illustrated art, sound and music (assumption: Q4).
-- Mobile and touch-optimised layout (assumption: Q6).
+- Sprite or illustrated art, sound and music (decision: Q4).
+- Mobile and touch-optimised layout (decision: Q6).
 - Multiple save slots.
 
 ### Out of scope (not planned)
 
 - Multiplayer of any kind, including trading, chat and leaderboards.
 - Accounts, cloud saves or any backend service.
-- Monetisation: purchases, ads, premium currency (assumption: Q5).
-- Player-controlled, real-time combat (assumption: Q7).
+- Monetisation: purchases, ads, premium currency (decision: Q5).
+- Player-controlled, real-time combat (decision: Q7).
 - Content that reuses EverQuest, RuneScape or other third-party names, lore or
   assets.
 
@@ -455,38 +455,19 @@ Delivery health is tracked with the five metrics in the Agentic SDLC
 
 ---
 
-## 12. Open questions for Conor
+## 12. Resolved decisions
 
-Only questions whose answer changes MVP scope are listed. The working
-assumption in each case is what this PRD currently specifies.
+These questions were open when this PRD was drafted. Each one changed MVP
+scope. Conor Hodder accepted every working assumption as stated, so the PRD
+above already reflects these answers.
 
-1. **Q1: Time model: real-time vs turn-based ticks.** Working assumption:
-   activities run in **real (wall-clock) time**, so a 10-minute quest takes 10 real
-   minutes. The alternative is turn-based "ticks" that only advance when the
-   player acts (or presses "end day"). That would remove offline progress and
-   change pacing, session length and several criteria (AC-6, AC-13, AC-14, S-4).
-2. **Q2: Offline progress and its cap.** Working assumption: **yes**, at **full
-   rate up to 12 hours**, then nothing. Alternatives: no offline progress, a
-   reduced offline rate, or a different cap. This affects session expectations,
-   G-4 and G-5.
-3. **Q3: Permadeath.** Working assumption: **no permadeath in MVP**. A knockout
-   costs XP progress and recovery time. A hardcore mode is listed as Later.
-   Should permadeath be the default, an MVP option, or never?
-4. **Q4: Art style.** Working assumption: **text plus Unicode/emoji glyphs**, with
-   no sprites or illustrations in MVP. Sprites would add asset sourcing,
-   licensing and a lot of UI scope.
-5. **Q5: Monetisation.** Working assumption: **free, no monetisation, no ads,
-   ever**. Please confirm. It rules out any backend, accounts or payment flows.
-6. **Q6: Mobile.** Working assumption: **desktop browsers only for MVP**, with no
-   guarantee of a usable mobile layout. Making mobile and touch first-class
-   would add layout scope to most features. Since check-ins are 1–3 minutes,
-   mobile may matter more than it first looks.
-7. **Q7: How much control over combat.** Working assumption: combat is **fully
-   auto-resolved**. The player controls who goes, with what gear, and when to
-   recall. The alternative is light tactical control (e.g. per-party stances
-   or ability priorities), which would add a combat-configuration journey and
-   more spec.
-8. **Q8: Audience and sharing.** Working assumption: **Conor first, plus a small
-   circle of friends**, with no telemetry. If the game is meant for a wider
-   public audience, the success criteria would need real usage data, which
-   conflicts with the no-tracking constraint and needs a decision.
+| # | Decision | Accepted answer | Status |
+|---|---|---|---|
+| **Q1** | Time model: real-time vs turn-based ticks | Activities run in **real (wall-clock) time**: a 10-minute quest takes 10 real minutes. No turn-based ticks. | Accepted by Conor |
+| **Q2** | Offline progress and its cap | **Yes**, at **full rate up to 12 hours**, then nothing. | Accepted by Conor |
+| **Q3** | Permadeath | **No permadeath in MVP.** A knockout costs XP progress and recovery time. An optional hardcore mode stays in Later. | Accepted by Conor |
+| **Q4** | Art style | **Text plus Unicode/emoji glyphs.** No sprites or illustrations in MVP. | Accepted by Conor |
+| **Q5** | Monetisation | **Free, no monetisation, no ads, ever.** No backend, accounts or payment flows. | Accepted by Conor |
+| **Q6** | Mobile | **Desktop browsers only for MVP.** No guarantee of a usable mobile layout. Mobile and touch stay in Later. | Accepted by Conor |
+| **Q7** | Control over combat | **Fully auto-resolved.** The player controls who goes, with what gear, and when to recall. No stances or ability priorities in MVP. | Accepted by Conor |
+| **Q8** | Audience and sharing | **Conor first, plus a small circle of friends**, with no telemetry. Success is measured from the Guild Ledger, playtests and simulations. | Accepted by Conor |

@@ -52,6 +52,5 @@ for each feature will live in the living specification written during
 - **TF-12 to TF-14** complete the management and idle loop.
 - **TF-15 to TF-18** prepare for release: measurement, content, onboarding and
   hardening against the PRD's acceptance and guardrail criteria.
-- If Conor's answers to the open questions change scope (especially Q1 time
-  model, Q2 offline progress, Q4 art style or Q6 mobile), this list is revised
-  in `Specify` before TF-3 is built.
+- The scope decisions Q1–Q8 are resolved (PRD-001 §12), and this list already
+  reflects the accepted answers. It can still be reshaped in `Specify`.

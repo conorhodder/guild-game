@@ -8,8 +8,8 @@ The project is built with [The Agentic SDLC](https://github.com/conorhodder/sdlc
 and is currently at the **Frame** stage. There is no game code yet.
 
 - **[Product Requirements Document (PRD-001)](docs/prd.md)**: the problem,
-  audience, core loop, acceptance and success criteria, scope and open
-  questions.
+  audience, core loop, acceptance and success criteria, scope and resolved
+  decisions.
 - **[Proposed technical features](docs/features.md)**: the thin, ordered
   slices that would deliver the MVP, one PR each.
 
