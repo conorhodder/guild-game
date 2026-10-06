@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 import type { KeyboardEvent, ReactNode } from 'react';
 
 export interface TabDefinition {
@@ -6,6 +6,33 @@ export interface TabDefinition {
   label: string;
   panel: ReactNode;
 }
+
+interface TabPanelProps {
+  tab: TabDefinition;
+  active: boolean;
+}
+
+const TabPanel = memo(
+  function TabPanel({ tab, active }: TabPanelProps) {
+    return (
+      <section
+        aria-labelledby={`${tab.id}-tab`}
+        className="tab-panel"
+        hidden={!active}
+        id={`${tab.id}-panel`}
+        role="tabpanel"
+        tabIndex={0}
+      >
+        {tab.panel}
+      </section>
+    );
+  },
+  (previous, next) =>
+    previous.tab.id === next.tab.id &&
+    previous.tab.label === next.tab.label &&
+    !previous.active &&
+    !next.active,
+);
 
 interface TabsProps {
   tabs: TabDefinition[];
@@ -65,17 +92,7 @@ export function Tabs({ tabs, selectedId: controlledId, onSelect }: TabsProps) {
         ))}
       </div>
       {tabs.map((tab) => (
-        <section
-          aria-labelledby={`${tab.id}-tab`}
-          className="tab-panel"
-          hidden={activeId !== tab.id}
-          id={`${tab.id}-panel`}
-          key={tab.id}
-          role="tabpanel"
-          tabIndex={0}
-        >
-          {tab.panel}
-        </section>
+        <TabPanel active={activeId === tab.id} key={tab.id} tab={tab} />
       ))}
     </div>
   );

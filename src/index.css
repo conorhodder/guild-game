@@ -130,10 +130,7 @@ button[aria-selected='true'] {
   color: #f0c869;
 }
 
-button:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
-[role='tabpanel']:focus-visible {
+:where(a, button, input, select, textarea, summary, [tabindex], [contenteditable='true']):focus-visible {
   outline: 2px solid #f0c869;
   outline-offset: 3px;
 }
@@ -222,12 +219,6 @@ input {
   color: #e8e2cf;
   background: #201c17;
   font: inherit;
-}
-
-input:focus-visible,
-select:focus-visible {
-  outline: 2px solid #f0c869;
-  outline-offset: 3px;
 }
 
 select {
@@ -749,5 +740,16 @@ select {
 
   .ledger-definitions {
     grid-template-columns: minmax(8rem, 1fr) 1.5fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }

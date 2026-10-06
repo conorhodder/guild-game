@@ -138,4 +138,29 @@ describe('LogPanel', () => {
       }
     }
   });
+
+  it('renders only the latest 500 entries after applying the current filters', () => {
+    const game = createNewGame({ seed: 1, wallMs: 0, guildName: 'Test Guild' });
+    game.log = Array.from({ length: 650 }, (_, index) => ({
+      id: index + 1,
+      simMs: index * 1000,
+      channel: 'guild',
+      category: 'system',
+      text: `Line ${index}`,
+      highlight: false,
+    }));
+
+    render(
+      <LogPanel
+        game={game}
+        onChannelChange={vi.fn()}
+        selectedChannel="guild"
+      />,
+    );
+
+    const entries = screen.getAllByRole('listitem');
+    expect(entries).toHaveLength(500);
+    expect(entries[0]?.textContent).toContain('Line 150');
+    expect(entries.at(-1)?.textContent).toContain('Line 649');
+  });
 });

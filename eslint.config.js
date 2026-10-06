@@ -20,11 +20,46 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      'no-restricted-globals': [
+        'error',
+        { name: 'fetch', message: 'The game must not make network requests.' },
+        { name: 'XMLHttpRequest', message: 'The game must not make network requests.' },
+        { name: 'WebSocket', message: 'The game must not make network requests.' },
+        { name: 'EventSource', message: 'The game must not make network requests.' },
+      ],
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'navigator',
+          property: 'sendBeacon',
+          message: 'The game must not send data over the network.',
+        },
+      ],
     },
   },
   {
     files: ['*.config.{js,ts}'],
     languageOptions: { globals: globals.node },
+  },
+  {
+    files: ['src/**/*.{js,jsx,mjs,cjs}'],
+    rules: {
+      'no-restricted-globals': [
+        'error',
+        { name: 'fetch', message: 'The game must not make network requests.' },
+        { name: 'XMLHttpRequest', message: 'The game must not make network requests.' },
+        { name: 'WebSocket', message: 'The game must not make network requests.' },
+        { name: 'EventSource', message: 'The game must not make network requests.' },
+      ],
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'navigator',
+          property: 'sendBeacon',
+          message: 'The game must not send data over the network.',
+        },
+      ],
+    },
   },
   {
     files: ['src/game/**/*.{ts,tsx}'],
@@ -33,6 +68,11 @@ export default tseslint.config(
         'error',
         { object: 'Math', property: 'random', message: 'Use the seeded game RNG.' },
         { object: 'Date', property: 'now', message: 'Pass wall time in as an argument.' },
+        {
+          object: 'navigator',
+          property: 'sendBeacon',
+          message: 'The game must not send data over the network.',
+        },
       ],
       'no-restricted-syntax': [
         'error',

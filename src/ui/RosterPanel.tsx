@@ -188,6 +188,29 @@ function HeroSheet({
                 {slotItems.length === 0 && <p>No items for this slot in the stash.</p>}
                 <select
                   id={`equip-${hero.id}-${slot.id}`}
+                  onKeyDown={(event) => {
+                    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+                    event.preventDefault();
+                    const options = Array.from(event.currentTarget.options).filter(
+                      (option) => option.value !== '' && !option.disabled,
+                    );
+                    const currentIndex = options.findIndex(
+                      (option) => option.value === selectedItems[slot.id],
+                    );
+                    const direction = event.key === 'ArrowDown' ? 1 : -1;
+                    const nextIndex = currentIndex < 0
+                      ? direction > 0
+                        ? 0
+                        : options.length - 1
+                      : Math.max(0, Math.min(options.length - 1, currentIndex + direction));
+                    const nextOption = options[nextIndex];
+                    if (nextOption) {
+                      setSelectedItems((current) => ({
+                        ...current,
+                        [slot.id]: nextOption.value,
+                      }));
+                    }
+                  }}
                   onChange={(event) =>
                     setSelectedItems((current) => ({ ...current, [slot.id]: event.target.value }))
                   }

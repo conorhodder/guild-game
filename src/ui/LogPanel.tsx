@@ -60,11 +60,13 @@ export function LogPanel({
         .filter((channel): channel is string => channel !== null),
     ]),
   );
-  const lines = game.log.filter(
+  const lines = game.log
+    .filter(
       (line) =>
         enabledCategories[line.category] &&
         (selectedChannel === 'all' || line.channel === selectedChannel),
-    );
+    )
+    .slice(-500);
   const filterKey = `${selectedChannel}|${categories
     .filter(({ id }) => enabledCategories[id])
     .map(({ id }) => id)
@@ -110,7 +112,7 @@ export function LogPanel({
   return (
     <section aria-labelledby="log-heading" className="log-panel">
       <h2 id="log-heading">Log</h2>
-      <div aria-label="Log categories" className="log-filters">
+      <div aria-label="Log categories" className="log-filters" role="group">
         {categories.map(({ id, label }) => (
           <button
             aria-pressed={enabledCategories[id]}

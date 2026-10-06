@@ -170,7 +170,7 @@ describe('offline progress summaries', () => {
     expect(summary.allQuiet).toBe(false);
   });
 
-  it('finishes a 12-hour catch-up with two camps and two gatherers under five seconds', () => {
+  it('finishes a 12-hour catch-up with eight heroes, two camps, and two gatherers under two seconds', () => {
     const state = createBusyState();
     expect(state.heroOrder).toHaveLength(8);
     expect(Object.values(state.activities).filter((activity) => activity.kind === 'camp')).toHaveLength(2);
@@ -182,6 +182,6 @@ describe('offline progress summaries', () => {
 
     const elapsedMs = performance.now() - startedAt;
     console.info(`12-hour offline catch-up: ${elapsedMs.toFixed(1)} ms`);
-    expect(elapsedMs).toBeLessThan(5000);
+    expect(elapsedMs).toBeLessThan(2000);
   }, 10_000);
 });
