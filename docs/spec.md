@@ -264,10 +264,14 @@ kill counts in their activity state.
 
 ### Recruitment (TF-12, AC-2, J4)
 
-The board always has 3 candidates, generated with the rng at level 1–3 and
-replaced in full every 30 sim minutes. A visible countdown shows the next
-refresh. Hire cost is `40 + 30 * level` gold. The roster cap is 8; at the cap,
-hiring is disabled and a message explains why.
+The board always has 3 candidates and refreshes every 30 sim minutes. Candidate
+classes are random, with at least 2 distinct classes on the board. Candidate
+level is `clamp(round(avg roster level) + rng(-1..1), 1, 20)` (use average
+level 1 for an empty roster). A visible countdown shows the next refresh. Hire
+cost is `40 + 30 * level` gold. Hiring replaces the candidate so the board
+stays at 3. The roster cap is 8; at the cap, hiring is disabled and a message
+explains why. Dismissal is limited to Idle heroes, requires UI confirmation and
+returns their equipped gear to the stash.
 
 ### Gathering (TF-13, AC-8)
 

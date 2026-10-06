@@ -30,6 +30,7 @@ function expectCurrentShape(state: GameState) {
       'materials',
       'nextId',
       'nextLogId',
+      'recruitment',
       'rng',
       'seenMonsters',
       'stash',
@@ -95,6 +96,14 @@ describe('save format', () => {
     });
   });
 
+  it('adds a diverse recruitment board when migrating the v5 fixture', () => {
+    const state = loadEnvelope(JSON.stringify(fixtureFiles['./fixtures/v5.json']));
+
+    expect(state.recruitment.candidates).toHaveLength(3);
+    expect(new Set(state.recruitment.candidates.map((hero) => hero.classId)).size).toBeGreaterThan(1);
+    expect(state.recruitment.refreshAt).toBe(30 * 60_000);
+  });
+
   it('round-trips JSON and UTF-8 base64 saves', () => {
     const state = createNewGame({
       seed: 42,
@@ -128,6 +137,9 @@ describe('save format', () => {
     expect(isGameState({ ...state, materials: { 'copper-ore': 0 } })).toBe(false);
     expect(isGameState({ ...state, seenMonsters: [1] })).toBe(false);
     expect(isGameState({ ...state, seenMonsters: ['unknown-monster'] })).toBe(false);
+    expect(
+      isGameState({ ...state, recruitment: { ...state.recruitment, candidates: [] } }),
+    ).toBe(false);
     expect(
       isGameState({
         ...state,

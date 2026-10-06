@@ -491,6 +491,43 @@ select {
   margin-left: 0.5rem;
 }
 
+.recruit-board {
+  max-width: 62rem;
+}
+
+.recruit-board h2,
+.recruit-candidate h3,
+.recruit-roster h3 {
+  color: #f0c869;
+}
+
+.recruit-candidates,
+.recruit-roster {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.recruit-candidates {
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.recruit-candidate,
+.recruit-roster-member {
+  padding: 1rem;
+  border: 1px solid #62563f;
+  border-radius: 0.35rem;
+  background: #29241c;
+}
+
+.recruit-candidate h3 {
+  margin-top: 0;
+}
+
+.dismiss-confirmation button + button {
+  margin-left: 0.5rem;
+}
+
 .hero-details {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

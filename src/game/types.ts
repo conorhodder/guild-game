@@ -105,6 +105,10 @@ export interface GameState {
   stash: Record<string, ItemInstance>;
   materials: Record<string, number>;
   seenMonsters: string[];
+  recruitment: {
+    candidates: Hero[];
+    refreshAt: number;
+  };
   log: LogLine[];
   nextLogId: number;
 }

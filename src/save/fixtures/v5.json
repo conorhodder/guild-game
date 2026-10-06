@@ -1,0 +1,137 @@
+{
+  "format": "tgl-save",
+  "version": 5,
+  "savedAt": 1700000180000,
+  "state": {
+    "guildName": "The Wayfarers",
+    "gold": 50,
+    "clock": {
+      "simMs": 0,
+      "lastWallMs": 1700000000000
+    },
+    "rng": 1135788988,
+    "nextId": 11,
+    "heroes": {
+      "h1": {
+        "id": "h1",
+        "name": "Orrin Wilder",
+        "classId": "warrior",
+        "glyph": "🛡️",
+        "flavour": "Says little, but misses very little.",
+        "level": 1,
+        "xp": 0,
+        "skills": {
+          "offense": 7,
+          "defense": 7
+        },
+        "gather": {
+          "mining": 1,
+          "herbalism": 1
+        },
+        "equipment": {
+          "mainHand": "i4",
+          "offHand": "i5",
+          "body": "i6"
+        },
+        "fatigue": 0,
+        "activityId": null,
+        "injuredUntil": null
+      },
+      "h2": {
+        "id": "h2",
+        "name": "Ysolde Grey",
+        "classId": "cleric",
+        "glyph": "✚",
+        "flavour": "Never travels without a whetstone.",
+        "level": 1,
+        "xp": 0,
+        "skills": {
+          "offense": 7,
+          "defense": 7,
+          "healing": 7
+        },
+        "gather": {
+          "mining": 1,
+          "herbalism": 1
+        },
+        "equipment": {
+          "mainHand": "i7",
+          "body": "i8"
+        },
+        "fatigue": 0,
+        "activityId": null,
+        "injuredUntil": null
+      },
+      "h3": {
+        "id": "h3",
+        "name": "Cadrin Wilder",
+        "classId": "wizard",
+        "glyph": "🔮",
+        "flavour": "Claims to have once crossed the marsh alone.",
+        "level": 1,
+        "xp": 0,
+        "skills": {
+          "offense": 7,
+          "defense": 7,
+          "evocation": 7
+        },
+        "gather": {
+          "mining": 1,
+          "herbalism": 1
+        },
+        "equipment": {
+          "mainHand": "i9",
+          "body": "i10"
+        },
+        "fatigue": 0,
+        "activityId": null,
+        "injuredUntil": null
+      }
+    },
+    "heroOrder": ["h1", "h2", "h3"],
+    "activities": {},
+    "itemInstances": {
+      "i4": {
+        "uid": "i4",
+        "itemId": "warrior-iron-sword"
+      },
+      "i5": {
+        "uid": "i5",
+        "itemId": "warrior-wooden-shield"
+      },
+      "i6": {
+        "uid": "i6",
+        "itemId": "warrior-chain-shirt"
+      },
+      "i7": {
+        "uid": "i7",
+        "itemId": "cleric-bronze-mace"
+      },
+      "i8": {
+        "uid": "i8",
+        "itemId": "cleric-wool-robe"
+      },
+      "i9": {
+        "uid": "i9",
+        "itemId": "wizard-oak-staff"
+      },
+      "i10": {
+        "uid": "i10",
+        "itemId": "wizard-apprentice-robe"
+      }
+    },
+    "stash": {},
+    "materials": {},
+    "seenMonsters": [],
+    "log": [
+      {
+        "id": 1,
+        "simMs": 0,
+        "channel": "guild",
+        "category": "system",
+        "text": "Welcome to The Wayfarers. Your adventurers are ready."
+      }
+    ],
+    "nextLogId": 2
+  }
+}

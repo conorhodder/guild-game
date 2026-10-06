@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import {
+  dismiss,
   dispatchQuest,
   equip,
   foundGuild,
+  hire,
   recall,
   rest,
   sell,
@@ -17,6 +19,7 @@ import { SettingsPanel } from './ui/SettingsPanel';
 import { FoundGuildForm } from './ui/FoundGuildForm';
 import { LogPanel } from './ui/LogPanel';
 import { QuestBoard } from './ui/QuestBoard';
+import { RecruitBoard } from './ui/RecruitBoard';
 import { RosterPanel } from './ui/RosterPanel';
 import { StashPanel } from './ui/StashPanel';
 import { Tabs } from './ui/Tabs';
@@ -143,6 +146,17 @@ export default function App() {
                   setLogChannel(channel);
                   setActiveTab('log');
                 }}
+              />
+            ),
+          },
+          {
+            id: 'recruit',
+            label: 'Recruit',
+            panel: (
+              <RecruitBoard
+                game={game}
+                onHire={(candidateIndex) => gameStore.dispatch(hire(candidateIndex))}
+                onDismiss={(heroId) => gameStore.dispatch(dismiss(heroId))}
               />
             ),
           },

@@ -9,6 +9,11 @@ import { questsById } from './data/quests';
 import { encounterTime } from './questSchedule';
 import { campChannel, questChannel } from './activityChannels';
 import { rollNamedSpawn } from './systems/camps';
+import {
+  hireCost,
+  replaceRecruitmentCandidate,
+  ROSTER_LIMIT,
+} from './systems/recruitment';
 import { TICK_MS } from './tick';
 
 export interface GameActionResult {
@@ -60,6 +65,81 @@ export function foundGuild(name: string): (state: GameState, wallMs?: number) =>
 
     appendLog(state, 'guild', 'system', `Welcome to ${guildName}. Your adventurers are ready.`);
     return state;
+  };
+}
+
+export function getHireReason(state: GameState, candidateIndex: number): string | null {
+  if (
+    !Number.isInteger(candidateIndex) ||
+    candidateIndex < 0 ||
+    candidateIndex >= state.recruitment.candidates.length
+  ) {
+    return 'Candidate is no longer available.';
+  }
+  if (state.heroOrder.length >= ROSTER_LIMIT) {
+    return `The roster is full (${ROSTER_LIMIT} heroes).`;
+  }
+  const candidate = state.recruitment.candidates[candidateIndex];
+  if (!candidate) return 'Candidate is no longer available.';
+  const cost = hireCost(candidate.level);
+  if (state.gold < cost) return `Need ${cost} gold; you have ${state.gold}.`;
+  return null;
+}
+
+export function hire(candidateIndex: number): GameAction {
+  return (currentState) => {
+    const reason = getHireReason(currentState, candidateIndex);
+    if (reason) return { state: currentState, reason };
+
+    const state = structuredClone(currentState);
+    const candidate = state.recruitment.candidates[candidateIndex];
+    if (!candidate || state.heroes[candidate.id]) {
+      return { state: currentState, reason: 'Candidate is no longer available.' };
+    }
+    const cost = hireCost(candidate.level);
+    state.gold -= cost;
+    for (const [slot, itemId] of Object.entries(starterGear[candidate.classId])) {
+      if (!itemId) continue;
+      const instance = createItemInstance(state, itemId);
+      state.itemInstances[instance.uid] = instance;
+      candidate.equipment[slot as Slot] = instance.uid;
+    }
+    state.heroes[candidate.id] = candidate;
+    state.heroOrder.push(candidate.id);
+    state.recruitment.candidates = replaceRecruitmentCandidate(state, candidateIndex);
+    appendLog(
+      state,
+      'guild',
+      'system',
+      `${candidate.name} has joined the guild for ${cost} gold.`,
+    );
+    return { state };
+  };
+}
+
+export function getDismissReason(state: GameState, heroId: string): string | null {
+  const hero = state.heroes[heroId];
+  if (!hero) return 'Hero not found.';
+  if (heroStatus(hero, state) !== 'Idle') return 'Only Idle heroes can be dismissed.';
+  return null;
+}
+
+export function dismiss(heroId: string): GameAction {
+  return (currentState) => {
+    const reason = getDismissReason(currentState, heroId);
+    if (reason) return { state: currentState, reason };
+
+    const state = structuredClone(currentState);
+    const hero = state.heroes[heroId];
+    if (!hero) return { state: currentState, reason: 'Hero not found.' };
+    for (const uid of Object.values(hero.equipment)) {
+      const instance = state.itemInstances[uid];
+      if (instance) state.stash[uid] = instance;
+    }
+    delete state.heroes[heroId];
+    state.heroOrder = state.heroOrder.filter((id) => id !== heroId);
+    appendLog(state, 'guild', 'system', `${hero.name} has been dismissed from the guild.`);
+    return { state };
   };
 }
 

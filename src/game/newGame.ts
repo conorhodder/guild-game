@@ -1,4 +1,8 @@
 import type { GameState } from './types';
+import {
+  createRecruitmentCandidates,
+  RECRUITMENT_REFRESH_MS,
+} from './systems/recruitment';
 
 export interface NewGameOptions {
   seed: number;
@@ -11,7 +15,7 @@ export function createNewGame({ seed, wallMs, guildName }: NewGameOptions): Game
     throw new RangeError('Seed and wall time must be finite numbers.');
   }
 
-  return {
+  const state: GameState = {
     guildName,
     gold: 50,
     clock: {
@@ -27,7 +31,13 @@ export function createNewGame({ seed, wallMs, guildName }: NewGameOptions): Game
     stash: {},
     materials: {},
     seenMonsters: [],
+    recruitment: {
+      candidates: [],
+      refreshAt: RECRUITMENT_REFRESH_MS,
+    },
     log: [],
     nextLogId: 1,
   };
+  state.recruitment.candidates = createRecruitmentCandidates(state);
+  return state;
 }

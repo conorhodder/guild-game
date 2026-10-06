@@ -28,18 +28,14 @@ describe('GameStore', () => {
 
   it('creates and saves a new game when there is no save', () => {
     const storage = new MemoryStorage();
+    const expected = createNewGame({ seed: 456, wallMs: 123, guildName: '' });
     const store = new GameStore({
       storage,
       now: () => 123,
       seed: () => 456,
     });
 
-    expect(store.getState()).toMatchObject({
-      guildName: '',
-      gold: 50,
-      clock: { simMs: 0, lastWallMs: 123 },
-      rng: 456,
-    });
+    expect(store.getState()).toEqual(expected);
     expect(loadEnvelope(storage.getItem(SAVE_KEY) ?? '')).toEqual(store.getState());
     store.destroy();
   });
@@ -106,7 +102,9 @@ describe('GameStore', () => {
 
     store.startNewGame();
 
-    expect(store.getState()?.rng).toBe(99);
+    expect(store.getState()).toEqual(
+      createNewGame({ seed: 99, wallMs: 1234, guildName: '' }),
+    );
     expect(storage.getItem(SAVE_KEY)).not.toBeNull();
     store.destroy();
   });

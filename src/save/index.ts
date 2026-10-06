@@ -2,6 +2,11 @@ import { itemsById } from '../game/data/items';
 import { monstersById } from '../game/data/monsters';
 import { questsById } from '../game/data/quests';
 import { campsById, zonesById } from '../game/data/zones';
+import {
+  createRecruitmentCandidates,
+  RECRUITMENT_REFRESH_MS,
+  ROSTER_LIMIT,
+} from '../game/systems/recruitment';
 import type {
   Activity,
   ClassId,
@@ -14,7 +19,7 @@ import type {
 } from '../game/types';
 
 export const SAVE_KEY = 'guildmasters-ledger.save';
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 
 export interface SaveEnvelope {
   format: 'tgl-save';
@@ -69,6 +74,34 @@ export const migrations: Record<number, Migration> = {
         ]),
       ),
     };
+  },
+  5: (state) => {
+    if (
+      !isRecord(state) ||
+      isRecord(state.recruitment) ||
+      !isRecord(state.clock) ||
+      !Number.isFinite(state.clock.simMs) ||
+      !Number.isInteger(state.rng) ||
+      (state.rng as number) < 0 ||
+      (state.rng as number) > 0xffffffff ||
+      !Number.isInteger(state.nextId) ||
+      (state.nextId as number) < 1 ||
+      !isRecord(state.heroes) ||
+      !Array.isArray(state.heroOrder)
+    ) {
+      return state;
+    }
+    const migrated = {
+      ...state,
+      recruitment: {
+        candidates: [] as Hero[],
+        refreshAt: (state.clock.simMs as number) + RECRUITMENT_REFRESH_MS,
+      },
+    };
+    migrated.recruitment.candidates = createRecruitmentCandidates(
+      migrated as unknown as GameState,
+    );
+    return migrated;
   },
 };
 
@@ -230,6 +263,7 @@ export function isGameState(value: unknown): value is GameState {
     !isRecord(value.clock) ||
     !isRecord(value.itemInstances) ||
     !isRecord(value.stash) ||
+    !isRecord(value.recruitment) ||
     !Array.isArray(value.seenMonsters)
   ) {
     return false;
@@ -255,6 +289,7 @@ export function isGameState(value: unknown): value is GameState {
     isRecord(value.heroes) &&
     Object.entries(value.heroes).every(([id, hero]) => isHero(hero) && hero.id === id) &&
     Array.isArray(value.heroOrder) &&
+    value.heroOrder.length <= ROSTER_LIMIT &&
     value.heroOrder.every(
       (id) => typeof id === 'string' && Object.prototype.hasOwnProperty.call(value.heroes, id),
     ) &&
@@ -287,6 +322,25 @@ export function isGameState(value: unknown): value is GameState {
         );
       },
     ) &&
+    Array.isArray(value.recruitment.candidates) &&
+    value.recruitment.candidates.length >= 3 &&
+    value.recruitment.candidates.every(
+      (candidate) =>
+        isHero(candidate) &&
+        candidate.activityId === null &&
+        candidate.injuredUntil === null &&
+        candidate.fatigue === 0 &&
+        Object.keys(candidate.equipment).length === 0 &&
+        !Object.prototype.hasOwnProperty.call(value.heroes, candidate.id),
+    ) &&
+    new Set(value.recruitment.candidates.map((candidate) => (candidate as Hero).id)).size ===
+      value.recruitment.candidates.length &&
+    new Set(
+      value.recruitment.candidates.map((candidate) => (candidate as Hero).classId),
+    ).size >= 2 &&
+    typeof value.recruitment.refreshAt === 'number' &&
+    Number.isFinite(value.recruitment.refreshAt) &&
+    value.recruitment.refreshAt >= 0 &&
     isRecord(value.materials) &&
     Object.entries(value.materials).every(
       ([itemId, quantity]) =>
