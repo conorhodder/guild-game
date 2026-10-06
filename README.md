@@ -1,4 +1,4 @@
-# Guild Game
+# The Guildmaster's Ledger
 
 A single-player fantasy guild manager for the browser, with an old-school
 EverQuest/RuneScape feel. You run a roster of heroes: recruit them, equip them,

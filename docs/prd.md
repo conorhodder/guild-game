@@ -1,4 +1,4 @@
-# PRD-001 · Guild Game: a single-player, old-school guild manager (MVP)
+# PRD-001 · The Guildmaster's Ledger: a single-player, old-school guild manager (MVP)
 
 | | |
 |---|---|
@@ -8,7 +8,7 @@
 | **Supersedes** | none |
 | **Technical features** | [docs/features.md](features.md) (proposed; to be confirmed in Specify) |
 
-This PRD is the product-focused root that all Guild Game work traces back to. It
+This PRD is the product-focused root that all work on The Guildmaster's Ledger traces back to. It
 covers the *why*, *for whom* and *how we will know it worked*. It deliberately
 carries no technical design: that belongs in the technical features and the
 living specification produced in `Specify`.
@@ -61,7 +61,7 @@ exists.
 
 ## 2. Product summary and core loop
 
-Guild Game is an **idle-ish guild manager** (decision: Q1, Q2). The player is
+The Guildmaster's Ledger is an **idle-ish guild manager** (decision: Q1, Q2). The player is
 the guild master and never fights directly. They recruit heroes, equip them,
 form parties and send them on timed **quests**, or to **camp** a spot in a
 dungeon. They also assign idle heroes to **gathering jobs**. Time passes, either

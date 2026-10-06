@@ -5,6 +5,6 @@ import App from './App';
 describe('App', () => {
   it('shows the game title', () => {
     render(<App />);
-    expect(screen.getByRole('heading', { level: 1, name: 'Guild Game' })).toBeDefined();
+    expect(screen.getByRole('heading', { level: 1, name: "The Guildmaster's Ledger" })).toBeDefined();
   });
 });
