@@ -20,6 +20,9 @@ export function createNewGame({ seed, wallMs, guildName }: NewGameOptions): Game
     },
     rng: seed >>> 0,
     nextId: 1,
+    heroes: {},
+    heroOrder: [],
+    activities: {},
     log: [],
     nextLogId: 1,
   };

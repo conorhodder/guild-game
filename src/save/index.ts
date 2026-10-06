@@ -1,7 +1,7 @@
-import type { GameState, LogCategory, LogLine } from '../game/types';
+import type { Activity, ClassId, GameState, Hero, LogCategory, LogLine, Slot } from '../game/types';
 
 export const SAVE_KEY = 'guildmasters-ledger.save';
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export interface SaveEnvelope {
   format: 'tgl-save';
@@ -12,13 +12,26 @@ export interface SaveEnvelope {
 
 type Migration = (state: unknown) => unknown;
 
-export const migrations: Record<number, Migration> = {};
+export const migrations: Record<number, Migration> = {
+  1: (state) => {
+    if (!isRecord(state)) return state;
+    return {
+      ...state,
+      heroes: state.heroes ?? {},
+      heroOrder: state.heroOrder ?? [],
+      activities: state.activities ?? {},
+    };
+  },
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 const logCategories: LogCategory[] = ['combat', 'loot', 'skill', 'system'];
+const classIds: ClassId[] = ['warrior', 'cleric', 'rogue', 'wizard'];
+const combatSkills = ['offense', 'defense', 'healing', 'evocation', 'backstab'];
+const slots: Slot[] = ['mainHand', 'offHand', 'body', 'trinket'];
 
 function isLogLine(value: unknown): value is LogLine {
   if (!isRecord(value)) return false;
@@ -32,6 +45,103 @@ function isLogLine(value: unknown): value is LogLine {
     logCategories.includes(value.category as LogCategory) &&
     typeof value.text === 'string' &&
     (value.highlight === undefined || typeof value.highlight === 'boolean')
+  );
+}
+
+function isHero(value: unknown): value is Hero {
+  if (!isRecord(value)) return false;
+  if (
+    typeof value.id !== 'string' ||
+    typeof value.name !== 'string' ||
+    typeof value.classId !== 'string' ||
+    !classIds.includes(value.classId as ClassId) ||
+    typeof value.glyph !== 'string' ||
+    typeof value.flavour !== 'string' ||
+    !Number.isInteger(value.level) ||
+    (value.level as number) < 1 ||
+    (value.level as number) > 20 ||
+    typeof value.xp !== 'number' ||
+    !Number.isFinite(value.xp) ||
+    value.xp < 0 ||
+    !isRecord(value.skills) ||
+    !isRecord(value.gather) ||
+    !isRecord(value.equipment) ||
+    typeof value.fatigue !== 'number' ||
+    !Number.isFinite(value.fatigue) ||
+    value.fatigue < 0 ||
+    value.fatigue > 100 ||
+    !(value.activityId === null || typeof value.activityId === 'string') ||
+    !(value.injuredUntil === null ||
+      (typeof value.injuredUntil === 'number' && Number.isFinite(value.injuredUntil)))
+  ) {
+    return false;
+  }
+
+  return (
+    Object.entries(value.skills).every(
+      ([skill, amount]) =>
+        combatSkills.includes(skill) &&
+        typeof amount === 'number' &&
+        Number.isFinite(amount) &&
+        amount >= 0,
+    ) &&
+    typeof value.gather.mining === 'number' &&
+    Number.isFinite(value.gather.mining) &&
+    value.gather.mining >= 0 &&
+    typeof value.gather.herbalism === 'number' &&
+    Number.isFinite(value.gather.herbalism) &&
+    value.gather.herbalism >= 0 &&
+    Object.entries(value.equipment).every(
+      ([slot, uid]) => slots.includes(slot as Slot) && typeof uid === 'string',
+    )
+  );
+}
+
+function isActivity(value: unknown): value is Activity {
+  if (!isRecord(value) || typeof value.id !== 'string') return false;
+
+  if (value.kind === 'quest') {
+    return (
+      typeof value.questId === 'string' &&
+      Array.isArray(value.heroIds) &&
+      value.heroIds.every((id) => typeof id === 'string') &&
+      typeof value.startedAt === 'number' &&
+      Number.isFinite(value.startedAt) &&
+      typeof value.endsAt === 'number' &&
+      Number.isFinite(value.endsAt) &&
+      typeof value.nextEncounterAt === 'number' &&
+      Number.isFinite(value.nextEncounterAt) &&
+      Number.isInteger(value.encountersLeft)
+    );
+  }
+  if (value.kind === 'camp') {
+    return (
+      typeof value.zoneId === 'string' &&
+      typeof value.campId === 'string' &&
+      Array.isArray(value.heroIds) &&
+      value.heroIds.every((id) => typeof id === 'string') &&
+      typeof value.startedAt === 'number' &&
+      Number.isFinite(value.startedAt) &&
+      typeof value.spawnReadyAt === 'number' &&
+      Number.isFinite(value.spawnReadyAt) &&
+      typeof value.nextSpawnNamed === 'boolean'
+    );
+  }
+  if (value.kind === 'gather') {
+    return (
+      typeof value.heroId === 'string' &&
+      (value.skill === 'mining' || value.skill === 'herbalism') &&
+      typeof value.startedAt === 'number' &&
+      Number.isFinite(value.startedAt) &&
+      typeof value.nextYieldAt === 'number' &&
+      Number.isFinite(value.nextYieldAt)
+    );
+  }
+  return (
+    value.kind === 'rest' &&
+    typeof value.heroId === 'string' &&
+    typeof value.startedAt === 'number' &&
+    Number.isFinite(value.startedAt)
   );
 }
 
@@ -53,6 +163,17 @@ export function isGameState(value: unknown): value is GameState {
     typeof value.nextId === 'number' &&
     Number.isInteger(value.nextId) &&
     value.nextId >= 1 &&
+    isRecord(value.heroes) &&
+    Object.entries(value.heroes).every(([id, hero]) => isHero(hero) && hero.id === id) &&
+    Array.isArray(value.heroOrder) &&
+    value.heroOrder.every(
+      (id) => typeof id === 'string' && Object.prototype.hasOwnProperty.call(value.heroes, id),
+    ) &&
+    new Set(value.heroOrder).size === value.heroOrder.length &&
+    isRecord(value.activities) &&
+    Object.entries(value.activities).every(
+      ([id, activity]) => isActivity(activity) && activity.id === id,
+    ) &&
     Array.isArray(value.log) &&
     value.log.every(isLogLine) &&
     typeof value.nextLogId === 'number' &&

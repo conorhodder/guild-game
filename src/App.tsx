@@ -1,4 +1,7 @@
+import { foundGuild } from './game/actions';
 import { SettingsPanel } from './ui/SettingsPanel';
+import { FoundGuildForm } from './ui/FoundGuildForm';
+import { RosterPanel } from './ui/RosterPanel';
 import { Tabs } from './ui/Tabs';
 import { gameStore, useGame, useSaveNotice } from './store';
 
@@ -34,6 +37,21 @@ export default function App() {
     );
   }
 
+  if (game.guildName === '') {
+    return (
+      <main className="app">
+        <header className="app-header">
+          <h1>The Guildmaster's Ledger</h1>
+          <div className="header-stats">
+            <p className="gold">{game.gold} gold</p>
+            <p className="sim-clock">{formatSimClock(game.clock.simMs)}</p>
+          </div>
+        </header>
+        <FoundGuildForm onFound={(name) => gameStore.dispatch(foundGuild(name))} />
+      </main>
+    );
+  }
+
   return (
     <main className="app">
       <header className="app-header">
@@ -48,6 +66,11 @@ export default function App() {
       </header>
       <Tabs
         tabs={[
+          {
+            id: 'roster',
+            label: 'Roster',
+            panel: <RosterPanel game={game} />,
+          },
           {
             id: 'settings',
             label: 'Settings',

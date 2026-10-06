@@ -18,7 +18,18 @@ const fixtureFiles = import.meta.glob('./fixtures/*.json', {
 function expectCurrentShape(state: GameState) {
   expect(isGameState(state)).toBe(true);
   expect(Object.keys(state).sort()).toEqual(
-    ['clock', 'gold', 'guildName', 'log', 'nextId', 'nextLogId', 'rng'].sort(),
+    [
+      'activities',
+      'clock',
+      'gold',
+      'guildName',
+      'heroOrder',
+      'heroes',
+      'log',
+      'nextId',
+      'nextLogId',
+      'rng',
+    ].sort(),
   );
   expect(Object.keys(state.clock).sort()).toEqual(['lastWallMs', 'simMs']);
   expect(Array.isArray(state.log)).toBe(true);
@@ -28,6 +39,15 @@ describe('save format', () => {
   it.each(Object.entries(fixtureFiles))('loads fixture %s into the current state shape', (_, raw) => {
     const state = loadEnvelope(JSON.stringify(raw));
     expectCurrentShape(state);
+  });
+
+  it('migrates the v1 fixture with empty hero and activity collections', () => {
+    const fixture = fixtureFiles['./fixtures/v1.json'];
+    const state = loadEnvelope(JSON.stringify(fixture));
+
+    expect(state.heroes).toEqual({});
+    expect(state.heroOrder).toEqual([]);
+    expect(state.activities).toEqual({});
   });
 
   it('round-trips JSON and UTF-8 base64 saves', () => {
