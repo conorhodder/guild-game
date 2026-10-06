@@ -29,6 +29,8 @@ interface RosterPanelProps {
   onUnequip: (heroId: string, slot: Slot) => string | null;
   onRest: (heroId: string) => string | null;
   onRecall: (activityId: string) => string | null;
+  selectedHeroId?: string | null;
+  onHeroSelect?: (heroId: string) => void;
 }
 
 function formatStat(value: number): string {
@@ -258,8 +260,11 @@ export function RosterPanel({
   onUnequip,
   onRest,
   onRecall,
+  selectedHeroId: controlledSelectedId,
+  onHeroSelect,
 }: RosterPanelProps) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null);
+  const selectedId = controlledSelectedId ?? internalSelectedId;
   const heroes = game.heroOrder.flatMap((id) => {
     const hero = game.heroes[id];
     return hero ? [hero] : [];
@@ -279,7 +284,10 @@ export function RosterPanel({
               <li key={hero.id}>
                 <button
                   aria-pressed={selectedHero?.id === hero.id}
-                  onClick={() => setSelectedId(hero.id)}
+                  onClick={() => {
+                    if (controlledSelectedId === undefined) setInternalSelectedId(hero.id);
+                    onHeroSelect?.(hero.id);
+                  }}
                   type="button"
                 >
                   {hero.glyph} {hero.name} · {classes[hero.classId].name} · Level {hero.level}

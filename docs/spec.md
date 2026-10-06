@@ -286,11 +286,18 @@ fatigue 100; its activity tracks the total yield count.
 ### Offline and "While you were away" (TF-14, AC-13, AC-14, G-4, G-5, J2)
 
 Offline progress uses the same `syncToWall` path as online play, so online and
-offline are identical by construction. The summary shows the duration
-simulated (and whether it hit the cap), then per hero: XP, levels, skill-ups,
-knockouts. Below that are loot, gathered materials and gold. Each hero has a
-"Go to hero" button. Heroes who need attention (*Idle*, fatigue >= 75,
-*Injured*) are listed first.
+offline are identical by construction. On load and when returning to a visible
+tab, a sync that credits at least 60 seconds produces a summary from structured
+simulation events and before/after hero snapshots, never from the retained log.
+The modal reports raw time away, credited time and whether the 12-hour cap was
+hit; it lists per-hero floored XP, levels, skill-ups and knockouts, plus gold,
+items by rarity, rare and named item names, materials, kills, named kills and
+quest outcomes. Empty sections are omitted, heroes needing attention appear
+first, and each hero has a "Go to hero" button. Live one-second ticks do not
+produce a summary. If no progress events or hero changes occurred, the dialog
+says "All quiet while you were away." The modal has an accessible labelled
+dialog role, traps Tab, closes with Escape or "Back to the guild", and restores
+focus when dismissed.
 
 ### Guild Ledger (TF-15, S-1, S-2)
 

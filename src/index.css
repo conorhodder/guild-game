@@ -113,6 +113,51 @@ textarea:focus-visible,
   max-width: 42rem;
 }
 
+.away-backdrop {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: rgb(0 0 0 / 78%);
+}
+
+.away-dialog {
+  width: min(100%, 48rem);
+  max-height: min(85vh, 52rem);
+  overflow-y: auto;
+  border: 1px solid #b49a61;
+  border-radius: 0.35rem;
+  padding: 1.5rem;
+  color: #e8e2cf;
+  background: #201c17;
+  box-shadow: 0 1rem 4rem rgb(0 0 0 / 60%);
+}
+
+.away-dialog h2,
+.away-dialog h3 {
+  color: #f0c869;
+}
+
+.away-dialog section {
+  margin: 1rem 0;
+  border-top: 1px solid #514733;
+  padding-top: 0.5rem;
+}
+
+.away-dialog li {
+  margin: 0.4rem 0;
+}
+
+.away-dialog p {
+  margin: 0.35rem 0;
+}
+
+.away-dialog > button {
+  margin-top: 1rem;
+}
+
 .save-section {
   display: grid;
   gap: 0.75rem;

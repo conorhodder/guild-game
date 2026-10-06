@@ -18,6 +18,7 @@ import { campsById } from './game/data/zones';
 import { questsById } from './game/data/quests';
 import { SettingsPanel } from './ui/SettingsPanel';
 import { FoundGuildForm } from './ui/FoundGuildForm';
+import { AwaySummaryDialog } from './ui/AwaySummaryDialog';
 import { GatherBoard } from './ui/GatherBoard';
 import { LogPanel } from './ui/LogPanel';
 import { QuestBoard } from './ui/QuestBoard';
@@ -27,13 +28,21 @@ import { StashPanel } from './ui/StashPanel';
 import { Tabs } from './ui/Tabs';
 import { ZoneBoard } from './ui/ZoneBoard';
 import { formatSimClock } from './ui/formatSimTime';
-import { gameStore, useGame, useSaveNotice } from './store';
+import {
+  dismissAwaySummary,
+  gameStore,
+  useAwaySummary,
+  useGame,
+  useSaveNotice,
+} from './store';
 
 export default function App() {
   const game = useGame();
   const saveNotice = useSaveNotice();
+  const awaySummary = useAwaySummary();
   const [logChannel, setLogChannel] = useState('all');
   const [activeTab, setActiveTab] = useState('roster');
+  const [selectedHeroId, setSelectedHeroId] = useState<string | null>(null);
 
   if (!game) {
     return (
@@ -62,6 +71,16 @@ export default function App() {
           </div>
         </header>
         <FoundGuildForm onFound={(name) => gameStore.dispatch(foundGuild(name))} />
+        {awaySummary && (
+          <AwaySummaryDialog
+            onDismiss={dismissAwaySummary}
+            onGoToHero={(heroId) => {
+              setSelectedHeroId(heroId);
+              setActiveTab('roster');
+            }}
+            summary={awaySummary}
+          />
+        )}
       </main>
     );
   }
@@ -125,6 +144,8 @@ export default function App() {
                 onUnequip={(heroId, slot) => gameStore.dispatch(unequip(heroId, slot))}
                 onRest={(heroId) => gameStore.dispatch(rest(heroId))}
                 onRecall={(activityId) => gameStore.dispatch(recall(activityId))}
+                onHeroSelect={setSelectedHeroId}
+                selectedHeroId={selectedHeroId}
               />
             ),
           },
@@ -222,6 +243,16 @@ export default function App() {
           },
         ]}
       />
+      {awaySummary && (
+        <AwaySummaryDialog
+          onDismiss={dismissAwaySummary}
+          onGoToHero={(heroId) => {
+            setSelectedHeroId(heroId);
+            setActiveTab('roster');
+          }}
+          summary={awaySummary}
+        />
+      )}
     </main>
   );
 }

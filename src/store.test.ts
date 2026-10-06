@@ -150,10 +150,49 @@ describe('GameStore', () => {
 
       expect(store.getState()?.clock.simMs).toBe(OFFLINE_CAP_MS);
       expect(store.getState()?.clock.lastWallMs).toBe(now);
+      expect(store.getAwaySummary()).toMatchObject({
+        rawDelta: fortyEightHours,
+        credited: OFFLINE_CAP_MS,
+        capped: true,
+      });
+      store.dismissAwaySummary();
+      expect(store.getAwaySummary()).toBeNull();
     } finally {
       store.destroy();
       if (visibility) Object.defineProperty(document, 'visibilityState', visibility);
       else Reflect.deleteProperty(document, 'visibilityState');
     }
+  });
+
+  it('shows a summary for a long load catch-up but not for live ticks', () => {
+    vi.useFakeTimers();
+    const storage = new MemoryStorage();
+    const initial = createNewGame({ seed: 3, wallMs: 0, guildName: '' });
+    storage.setItem(SAVE_KEY, serialize(initial, 0));
+    let now = 60_000;
+    const store = new GameStore({ storage, now: () => now, seed: () => 1 });
+
+    expect(store.getAwaySummary()).toMatchObject({
+      rawDelta: 60_000,
+      credited: 60_000,
+      capped: false,
+    });
+    store.dismissAwaySummary();
+    now += 1000;
+    vi.advanceTimersByTime(1000);
+    expect(store.getAwaySummary()).toBeNull();
+    store.destroy();
+  });
+
+  it('does not show a summary when the wall clock moves backward', () => {
+    const storage = new MemoryStorage();
+    const initial = createNewGame({ seed: 3, wallMs: 1000, guildName: '' });
+    storage.setItem(SAVE_KEY, serialize(initial, 1000));
+    const store = new GameStore({ storage, now: () => 0, seed: () => 1 });
+
+    expect(store.getState()?.clock.simMs).toBe(0);
+    expect(store.getState()?.clock.lastWallMs).toBe(1000);
+    expect(store.getAwaySummary()).toBeNull();
+    store.destroy();
   });
 });

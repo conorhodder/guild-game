@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import type { GameAction, GameActionResult } from './game/actions';
 import { syncToWall } from './game/clock';
 import { createNewGame } from './game/newGame';
+import { summarizeAbsence, type AwaySummary } from './game/systems/offline';
 import type { GameState } from './game/types';
 import { loadEnvelope, SAVE_KEY, serialize } from './save';
 
@@ -37,6 +38,7 @@ function randomSeed(): number {
 
 export class GameStore {
   private state: GameState | null = null;
+  private awaySummary: AwaySummary | null = null;
   private saveNotice: string | null = null;
   private readonly subscribers = new Set<() => void>();
   private readonly storage: StorageLike;
@@ -47,7 +49,7 @@ export class GameStore {
   private clockTimer: ReturnType<typeof setInterval> | null = null;
   private readonly visibilityHandler = () => {
     if (this.document.visibilityState === 'visible') {
-      this.syncClock();
+      this.syncClock(true);
       this.startClockTimer();
     } else {
       this.stopClockTimer();
@@ -76,7 +78,7 @@ export class GameStore {
       }
     }
 
-    this.syncClock();
+    this.syncClock(true);
     this.document.addEventListener('visibilitychange', this.visibilityHandler);
     this.startClockTimer();
     this.autosaveTimer = setInterval(() => this.saveNow(), AUTOSAVE_MS);
@@ -85,6 +87,14 @@ export class GameStore {
   getState = (): GameState | null => this.state;
 
   getSaveNotice = (): string | null => this.saveNotice;
+
+  getAwaySummary = (): AwaySummary | null => this.awaySummary;
+
+  dismissAwaySummary(): void {
+    if (!this.awaySummary) return;
+    this.awaySummary = null;
+    this.notify();
+  }
 
   subscribe = (listener: () => void): (() => void) => {
     this.subscribers.add(listener);
@@ -132,9 +142,22 @@ export class GameStore {
     if (this.state) this.storage.setItem(SAVE_KEY, serialize(this.state, this.now()));
   }
 
-  private syncClock(): void {
+  private syncClock(showSummary = false): void {
     if (!this.state) return;
-    this.state = syncToWall(this.state, this.now()).state;
+    const before = this.state;
+    const nowWall = this.now();
+    const rawDelta = nowWall - before.clock.lastWallMs;
+    const result = syncToWall(before, nowWall);
+    this.state = result.state;
+    if (showSummary && result.credited >= 60_000) {
+      this.awaySummary = summarizeAbsence(
+        before,
+        result.state,
+        result.events,
+        result.credited,
+        rawDelta,
+      );
+    }
     this.notify();
   }
 
@@ -166,4 +189,16 @@ export function useSaveNotice(): string | null {
     gameStore.getSaveNotice,
     gameStore.getSaveNotice,
   );
+}
+
+export function useAwaySummary(): AwaySummary | null {
+  return useSyncExternalStore(
+    gameStore.subscribe,
+    gameStore.getAwaySummary,
+    gameStore.getAwaySummary,
+  );
+}
+
+export function dismissAwaySummary(): void {
+  gameStore.dismissAwaySummary();
 }
