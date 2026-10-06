@@ -4,6 +4,9 @@ import { rngPick } from './rng';
 import type { GameState, Hero, ItemData, ItemInstance, Slot } from './types';
 import { appendLog } from './systems/log';
 import { createHero, heroStatus } from './systems/heroes';
+import { questsById } from './data/quests';
+import { encounterTime } from './questSchedule';
+import { questChannel } from './activityChannels';
 
 export interface GameActionResult {
   state: GameState;
@@ -196,6 +199,64 @@ export function sellMaterial(itemId: string, quantity: number): GameAction {
     if (remaining === 0) delete state.materials[itemId];
     else state.materials[itemId] = remaining;
     state.gold += item.value * quantity;
+    return { state };
+  };
+}
+
+export function getQuestEligibilityReason(state: GameState, heroId: string): string | null {
+  const hero = state.heroes[heroId];
+  if (!hero) return 'Hero not found.';
+  if (heroStatus(hero, state) === 'Injured') return 'Hero is Injured.';
+  if (heroStatus(hero, state) !== 'Idle') return 'Hero must be Idle.';
+  if (hero.fatigue >= 100) return 'Fatigue must be below 100.';
+  return null;
+}
+
+export function dispatchQuest(questId: string, heroIds: string[]): GameAction {
+  return (currentState) => {
+    const quest = questsById[questId];
+    if (!quest) return { state: currentState, reason: 'Quest not found.' };
+    if (heroIds.length < 1 || heroIds.length > 4) {
+      return { state: currentState, reason: 'Choose between 1 and 4 heroes.' };
+    }
+    if (new Set(heroIds).size !== heroIds.length) {
+      return { state: currentState, reason: 'Choose each hero only once.' };
+    }
+
+    for (const heroId of heroIds) {
+      const reason = getQuestEligibilityReason(currentState, heroId);
+      if (reason) return { state: currentState, reason };
+    }
+
+    const state = structuredClone(currentState);
+    const id = `a${state.nextId}`;
+    state.nextId += 1;
+    const startedAt = state.clock.simMs;
+    const durationMs = quest.durationMin * 60_000;
+    const activity = {
+      kind: 'quest' as const,
+      id,
+      questId,
+      heroIds: [...heroIds],
+      startedAt,
+      endsAt: startedAt + durationMs,
+      nextEncounterAt: encounterTime(startedAt, durationMs, 0, quest.encounters.length),
+      encountersLeft: quest.encounters.length,
+    };
+    state.activities[id] = activity;
+    for (const heroId of heroIds) {
+      const hero = state.heroes[heroId];
+      if (hero) hero.activityId = id;
+    }
+
+    appendLog(
+      state,
+      questChannel(id, questId),
+      'system',
+      `Your party has set out on ${quest.name}.`,
+      undefined,
+      startedAt,
+    );
     return { state };
   };
 }

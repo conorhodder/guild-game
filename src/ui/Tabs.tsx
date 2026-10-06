@@ -9,12 +9,20 @@ export interface TabDefinition {
 
 interface TabsProps {
   tabs: TabDefinition[];
+  selectedId?: string;
+  onSelect?: (id: string) => void;
 }
 
-export function Tabs({ tabs }: TabsProps) {
-  const [selectedId, setSelectedId] = useState(tabs[0]?.id ?? '');
+export function Tabs({ tabs, selectedId: controlledId, onSelect }: TabsProps) {
+  const [internalId, setInternalId] = useState(tabs[0]?.id ?? '');
   const tabRefs = useRef(new Map<string, HTMLButtonElement>());
+  const selectedId = controlledId ?? internalId;
   const activeId = tabs.some((tab) => tab.id === selectedId) ? selectedId : (tabs[0]?.id ?? '');
+
+  function selectTab(id: string) {
+    if (controlledId === undefined) setInternalId(id);
+    onSelect?.(id);
+  }
 
   function handleKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     let nextIndex: number | undefined;
@@ -28,7 +36,7 @@ export function Tabs({ tabs }: TabsProps) {
     event.preventDefault();
     const nextTab = tabs[nextIndex];
     if (!nextTab) return;
-    setSelectedId(nextTab.id);
+    selectTab(nextTab.id);
     tabRefs.current.get(nextTab.id)?.focus();
   }
 
@@ -42,7 +50,7 @@ export function Tabs({ tabs }: TabsProps) {
             className="tab"
             id={`${tab.id}-tab`}
             key={tab.id}
-            onClick={() => setSelectedId(tab.id)}
+            onClick={() => selectTab(tab.id)}
             onKeyDown={(event) => handleKeyDown(event, index)}
             ref={(element) => {
               if (element) tabRefs.current.set(tab.id, element);

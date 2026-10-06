@@ -104,6 +104,23 @@ describe('save format', () => {
     expect(isGameState({ ...state, materials: { 'copper-ore': 0 } })).toBe(false);
     expect(isGameState({ ...state, seenMonsters: [1] })).toBe(false);
     expect(isGameState({ ...state, seenMonsters: ['unknown-monster'] })).toBe(false);
+    expect(
+      isGameState({
+        ...state,
+        activities: {
+          a1: {
+            kind: 'quest',
+            id: 'a1',
+            questId: 'unknown-quest',
+            heroIds: ['h1'],
+            startedAt: 0,
+            endsAt: 120_000,
+            nextEncounterAt: 40_000,
+            encountersLeft: 2,
+          },
+        },
+      }),
+    ).toBe(false);
   });
 
   it('rejects garbage without changing the existing state', () => {

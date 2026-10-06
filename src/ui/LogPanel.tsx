@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { questChannel } from '../game/activityChannels';
 import type { GameState, LogCategory } from '../game/types';
 
 const categories: { id: LogCategory; label: string }[] = [
@@ -18,7 +19,7 @@ interface LogPanelProps {
 function activityChannel(game: GameState, activityId: string): string | null {
   const activity = game.activities[activityId];
   if (!activity) return null;
-  if (activity.kind === 'quest') return `quest:${activity.id}`;
+  if (activity.kind === 'quest') return questChannel(activity.id, activity.questId);
   if (activity.kind === 'camp') return `camp:${activity.id}`;
   if (activity.kind === 'gather') return `gather:${activity.id}`;
   return `rest:${activity.id}`;

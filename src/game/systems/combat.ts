@@ -60,8 +60,12 @@ function standingHeroes(
   return heroIds.filter((heroId) => (hpByHero[heroId] ?? 0) > 0);
 }
 
+function combatNumber(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+}
+
 function damageValue(value: number): number {
-  return Math.max(1, Math.round(value));
+  return Math.max(1, value);
 }
 
 function applyExperience(
@@ -143,12 +147,8 @@ export function resolveFight(
         if (healTargetId) {
           const target = state.heroes[healTargetId];
           if (target) {
-            const healAmount = Math.max(
-              1,
-              Math.round(
-                heroStats(hero, state).heal + (hero.skills.healing ?? 0) / 4 + 4,
-              ),
-            );
+            const healAmount =
+              heroStats(hero, state).heal + (hero.skills.healing ?? 0) / 4 + 4;
             const currentHp = hpByHero[healTargetId] ?? 0;
             const healed = Math.min(
               healAmount,
@@ -159,7 +159,7 @@ export function resolveFight(
             logCombat(
               state,
               channel,
-              `${hero.name} heals ${target.name} for ${healed} HP.`,
+              `${hero.name} heals ${target.name} for ${combatNumber(healed)} HP.`,
               events,
               roundMs,
             );
@@ -200,7 +200,7 @@ export function resolveFight(
       logCombat(
         state,
         channel,
-        `${hero.name} hits ${targetName} for ${dealt} points of damage.`,
+        `${hero.name} hits ${targetName} for ${combatNumber(dealt)} points of damage.`,
         events,
         roundMs,
       );
@@ -248,7 +248,7 @@ export function resolveFight(
     logCombat(
       state,
       channel,
-      `${attackLead} hits ${target.name} for ${dealt} points of damage.`,
+      `${attackLead} hits ${target.name} for ${combatNumber(dealt)} points of damage.`,
       events,
       roundMs,
     );

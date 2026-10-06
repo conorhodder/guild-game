@@ -348,6 +348,64 @@ select {
   border-left: 2px solid #f0c869;
 }
 
+.quest-party {
+  display: grid;
+  gap: 0.6rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #62563f;
+}
+
+.quest-hero-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.quest-ineligible {
+  display: block;
+  color: #e8b2a4;
+}
+
+.quest-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.quest-card,
+.active-quest {
+  padding: 1rem;
+  border: 1px solid #62563f;
+  border-radius: 0.35rem;
+  background: #29241c;
+}
+
+.quest-card h3,
+.active-quest h4 {
+  margin-top: 0;
+}
+
+.first-quest-label {
+  width: fit-content;
+  padding: 0.2rem 0.45rem;
+  border: 1px solid #f0c869;
+  border-radius: 0.25rem;
+  color: #f0c869;
+  font-weight: 700;
+}
+
+.active-quests {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.active-quest progress {
+  width: min(100%, 30rem);
+}
+
 .hero-details {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

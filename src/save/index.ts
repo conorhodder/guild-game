@@ -1,5 +1,6 @@
 import { itemsById } from '../game/data/items';
 import { monstersById } from '../game/data/monsters';
+import { questsById } from '../game/data/quests';
 import type {
   Activity,
   ClassId,
@@ -128,17 +129,25 @@ function isActivity(value: unknown): value is Activity {
   if (!isRecord(value) || typeof value.id !== 'string') return false;
 
   if (value.kind === 'quest') {
+    const quest =
+      typeof value.questId === 'string' ? questsById[value.questId] : undefined;
+    if (!quest) return false;
     return (
-      typeof value.questId === 'string' &&
       Array.isArray(value.heroIds) &&
       value.heroIds.every((id) => typeof id === 'string') &&
+      new Set(value.heroIds).size === value.heroIds.length &&
+      value.heroIds.length >= 1 &&
+      value.heroIds.length <= 4 &&
       typeof value.startedAt === 'number' &&
       Number.isFinite(value.startedAt) &&
       typeof value.endsAt === 'number' &&
       Number.isFinite(value.endsAt) &&
+      value.endsAt >= value.startedAt &&
       typeof value.nextEncounterAt === 'number' &&
       Number.isFinite(value.nextEncounterAt) &&
-      Number.isInteger(value.encountersLeft)
+      Number.isInteger(value.encountersLeft) &&
+      (value.encountersLeft as number) >= 0 &&
+      (value.encountersLeft as number) <= quest.encounters.length
     );
   }
   if (value.kind === 'camp') {
