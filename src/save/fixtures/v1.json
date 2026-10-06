@@ -1,0 +1,17 @@
+{
+  "format": "tgl-save",
+  "version": 1,
+  "savedAt": 1700000000000,
+  "state": {
+    "guildName": "The Wayfarers",
+    "gold": 50,
+    "clock": {
+      "simMs": 0,
+      "lastWallMs": 1700000000000
+    },
+    "rng": 123456789,
+    "nextId": 1,
+    "log": [],
+    "nextLogId": 1
+  }
+}
