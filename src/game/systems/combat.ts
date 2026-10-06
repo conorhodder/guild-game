@@ -152,7 +152,7 @@ export function resolveFight(
               (maxHpByHero[healTargetId] ?? currentHp) - currentHp,
             );
             hpByHero[healTargetId] = currentHp + healed;
-            recordSkillUse(state, heroId, 'healing', channel, events);
+            recordSkillUse(state, heroId, 'healing', channel, events, roundMs);
             logCombat(
               state,
               channel,
@@ -165,11 +165,11 @@ export function resolveFight(
         }
       }
 
-      recordSkillUse(state, heroId, 'offense', channel, events);
+      recordSkillUse(state, heroId, 'offense', channel, events, roundMs);
       if (hero.classId === 'rogue') {
-        recordSkillUse(state, heroId, 'backstab', channel, events);
+        recordSkillUse(state, heroId, 'backstab', channel, events, roundMs);
       } else if (hero.classId === 'wizard') {
-        recordSkillUse(state, heroId, 'evocation', channel, events);
+        recordSkillUse(state, heroId, 'evocation', channel, events, roundMs);
       }
 
       const offense = hero.skills.offense ?? 0;
@@ -220,7 +220,7 @@ export function resolveFight(
     const target = state.heroes[targetId];
     if (!target) continue;
 
-    recordSkillUse(state, targetId, 'defense', channel, events);
+    recordSkillUse(state, targetId, 'defense', channel, events, roundMs);
     const defense = target.skills.defense ?? 0;
     const monsterHitChance = clampChance(
       0.65 + (5 * monster.level - defense) / 200,
