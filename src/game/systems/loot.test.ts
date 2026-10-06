@@ -34,7 +34,11 @@ describe('loot', () => {
     expect(
       state.log.some((line) => line.text === 'You receive Morrow Heartstone (Named)!'),
     ).toBe(true);
-    expect(events).toHaveLength(4);
+    expect(events.filter((event) => event.type === 'log')).toHaveLength(4);
+    expect(events.filter((event) => event.type === 'gold')).toEqual([
+      { type: 'gold', amount: 5 },
+    ]);
+    expect(events.filter((event) => event.type === 'loot')).toHaveLength(3);
   });
 
   it('matches named-monster loot rates within ten percent relative error', () => {

@@ -85,8 +85,11 @@ describe('heroes', () => {
 
     expect(hero.level).toBe(3);
     expect(hero.xp).toBe(40);
-    expect(events).toHaveLength(2);
-    expect(events.every((event) => event.type === 'log' && event.line.highlight)).toBe(true);
+    expect(events.filter((event) => event.type === 'levelUp')).toHaveLength(2);
+    expect(events.filter((event) => event.type === 'log')).toHaveLength(2);
+    expect(events.filter((event) => event.type === 'log').every(
+      (event) => event.type === 'log' && event.line.highlight,
+    )).toBe(true);
     expect(state.log[1]?.text).toBe(`${hero.name} has gained a level! Welcome to level 2!`);
 
     hero.level = 19;
@@ -95,7 +98,7 @@ describe('heroes', () => {
     grantXp(state, hero.id, 1_000_000, events);
     expect(hero.level).toBe(20);
     expect(hero.xp).toBe(0);
-    expect(events).toHaveLength(1);
+    expect(events.filter((event) => event.type === 'levelUp')).toHaveLength(1);
     grantXp(state, hero.id, 500, events);
     expect(hero.xp).toBe(0);
   });

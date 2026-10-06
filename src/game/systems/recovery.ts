@@ -25,6 +25,7 @@ export function knockOut(
     simMs,
   );
   events.push({ type: 'log', line });
+  events.push({ type: 'knockout', heroId });
 }
 
 function releaseRest(

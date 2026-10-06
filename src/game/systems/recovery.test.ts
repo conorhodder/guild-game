@@ -27,7 +27,9 @@ describe('knockout handling', () => {
       text: `${hero.name} has been knocked out! 24 XP lost.`,
       highlight: true,
     });
-    expect(events).toHaveLength(1);
+    expect(events.filter((event) => event.type === 'knockout')).toEqual([
+      { type: 'knockout', heroId: hero.id },
+    ]);
   });
 
   it('clears injuries at the recovery tick and logs readiness', () => {

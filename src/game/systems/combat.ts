@@ -272,6 +272,7 @@ export function resolveFight(
   if (outcome === 'won') {
     const lastRoundMs = startMs + (roundsCompleted - 1) * COMBAT_ROUND_MS;
     logCombat(state, channel, `You have slain ${targetName}!`, events, lastRoundMs);
+    events.push({ type: 'kill', monsterId, named: monster.named === true });
     applyExperience(state, heroIds, standingHeroes(heroIds, hpByHero), monster, events, endMs);
     rollLoot(state, monster.lootTable, channel, events, endMs);
   } else {

@@ -277,7 +277,7 @@ returns their equipped gear to the stash.
 
 A gathering job takes one *Idle* hero with fatigue below 100. Mining and
 Herbalism each have three material tiers with increasing value and skill
-requirements. Every `max(20, 60 - value/2)` seconds, the hero gathers one unit
+requirements. Every `max(20, 60 - skill/2)` seconds, the hero gathers one unit
 of the best tier their skill allows, with a 10% chance to gather the tier
 below. Each yield can raise the skill using `trySkillUp` and the gathering
 cap. Materials stack in `materials` and can be sold. Gathering stops at

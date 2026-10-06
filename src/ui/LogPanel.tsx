@@ -44,7 +44,7 @@ export function LogPanel({
 }: LogPanelProps) {
   const logContainerRef = useRef<HTMLDivElement>(null);
   const pinnedToBottom = useRef(true);
-  const [showJumpToLatest, setShowJumpToLatest] = useState(false);
+  const [jumpToLatestFor, setJumpToLatestFor] = useState<string | null>(null);
   const [enabledCategories, setEnabledCategories] = useState<Record<LogCategory, boolean>>({
     combat: true,
     loot: true,
@@ -65,17 +65,25 @@ export function LogPanel({
         enabledCategories[line.category] &&
         (selectedChannel === 'all' || line.channel === selectedChannel),
     );
+  const filterKey = `${selectedChannel}|${categories
+    .filter(({ id }) => enabledCategories[id])
+    .map(({ id }) => id)
+    .join(',')}`;
+  const showJumpToLatest = jumpToLatestFor === filterKey;
 
   useLayoutEffect(() => {
     const container = logContainerRef.current;
     if (!container) return;
     if (pinnedToBottom.current) {
       container.scrollTop = container.scrollHeight;
-      setShowJumpToLatest(false);
-    } else {
-      setShowJumpToLatest(true);
     }
   }, [lines]);
+
+  useLayoutEffect(() => {
+    pinnedToBottom.current = true;
+    const container = logContainerRef.current;
+    if (container) container.scrollTop = container.scrollHeight;
+  }, [filterKey]);
 
   function handleLogScroll() {
     const container = logContainerRef.current;
@@ -83,7 +91,7 @@ export function LogPanel({
     const atBottom =
       container.scrollHeight - container.scrollTop - container.clientHeight <= 8;
     pinnedToBottom.current = atBottom;
-    setShowJumpToLatest(!atBottom);
+    setJumpToLatestFor(atBottom ? null : filterKey);
   }
 
   function jumpToLatest() {
@@ -91,7 +99,12 @@ export function LogPanel({
     if (!container) return;
     pinnedToBottom.current = true;
     container.scrollTop = container.scrollHeight;
-    setShowJumpToLatest(false);
+    setJumpToLatestFor(null);
+  }
+
+  function resetToLatest() {
+    pinnedToBottom.current = true;
+    setJumpToLatestFor(null);
   }
 
   return (
@@ -102,9 +115,10 @@ export function LogPanel({
           <button
             aria-pressed={enabledCategories[id]}
             key={id}
-            onClick={() =>
-              setEnabledCategories((current) => ({ ...current, [id]: !current[id] }))
-            }
+            onClick={() => {
+              resetToLatest();
+              setEnabledCategories((current) => ({ ...current, [id]: !current[id] }));
+            }}
             type="button"
           >
             {enabledCategories[id] ? `✓ ${label}` : label}
@@ -114,7 +128,10 @@ export function LogPanel({
       <label htmlFor="log-channel">Channel</label>
       <select
         id="log-channel"
-        onChange={(event) => onChannelChange(event.target.value)}
+        onChange={(event) => {
+          resetToLatest();
+          onChannelChange(event.target.value);
+        }}
         value={selectedChannel}
       >
         <option value="all">All</option>

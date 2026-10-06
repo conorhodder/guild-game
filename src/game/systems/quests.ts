@@ -32,6 +32,12 @@ function failQuest(
     simMs,
   );
   events.push({ type: 'log', line });
+  events.push({
+    type: 'quest',
+    questId: activity.questId,
+    outcome: 'failed',
+    simMs,
+  });
   delete state.activities[activity.id];
 }
 
@@ -53,6 +59,9 @@ function completeQuest(
     for (const heroId of members) grantXp(state, heroId, xpEach, events, simMs);
   }
   state.gold += quest.rewardGold;
+  if (quest.rewardGold > 0) {
+    events.push({ type: 'gold', amount: quest.rewardGold });
+  }
   rollLoot(state, quest.lootTable, channel, events, simMs);
 
   const line = appendLog(
@@ -64,6 +73,12 @@ function completeQuest(
     simMs,
   );
   events.push({ type: 'log', line });
+  events.push({
+    type: 'quest',
+    questId: quest.id,
+    outcome: 'complete',
+    simMs,
+  });
   releaseParty(state, activity);
   delete state.activities[activity.id];
 }

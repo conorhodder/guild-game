@@ -3,6 +3,20 @@ import type { GameState, LogCategory, LogLine } from '../types';
 export const CHANNEL_LOG_LIMIT = 500;
 export const TOTAL_LOG_LIMIT = 5000;
 
+const channelCounts = new WeakMap<GameState, Map<string, number>>();
+
+function getChannelCounts(state: GameState): Map<string, number> {
+  const cached = channelCounts.get(state);
+  if (cached) return cached;
+
+  const counts = new Map<string, number>();
+  for (const line of state.log) {
+    counts.set(line.channel, (counts.get(line.channel) ?? 0) + 1);
+  }
+  channelCounts.set(state, counts);
+  return counts;
+}
+
 export function appendLog(
   state: GameState,
   channel: string,
@@ -19,11 +33,13 @@ export function appendLog(
     text,
     ...(highlight === undefined ? {} : { highlight }),
   };
+  const counts = getChannelCounts(state);
   state.nextLogId += 1;
   state.log.push(line);
 
-  const channelOverflow =
-    state.log.filter((entry) => entry.channel === channel).length - CHANNEL_LOG_LIMIT;
+  const count = (counts.get(channel) ?? 0) + 1;
+  counts.set(channel, count);
+  const channelOverflow = count - CHANNEL_LOG_LIMIT;
   if (channelOverflow > 0) {
     let removed = 0;
     state.log = state.log.filter((entry) => {
@@ -33,10 +49,16 @@ export function appendLog(
       }
       return true;
     });
+    counts.set(channel, count - removed);
   }
 
   if (state.log.length > TOTAL_LOG_LIMIT) {
-    state.log.splice(0, state.log.length - TOTAL_LOG_LIMIT);
+    const removed = state.log.splice(0, state.log.length - TOTAL_LOG_LIMIT);
+    for (const entry of removed) {
+      const remaining = (counts.get(entry.channel) ?? 1) - 1;
+      if (remaining === 0) counts.delete(entry.channel);
+      else counts.set(entry.channel, remaining);
+    }
   }
 
   return line;

@@ -94,4 +94,48 @@ describe('LogPanel', () => {
     expect(screen.queryByRole('button', { name: 'Jump to latest' })).toBeNull();
     expect(scroll.scrollTop).toBe(scroll.scrollHeight);
   });
+
+  it('opens and resets to the latest entry when the channel or filters change', () => {
+    const game = createNewGame({ seed: 1, wallMs: 0, guildName: 'Test Guild' });
+    appendLog(game, 'guild', 'system', 'Guild founded', undefined, 0);
+    appendLog(game, 'quest:a1', 'combat', 'A marsh rat attacks', undefined, 1000);
+    const originalScrollHeight = Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      'scrollHeight',
+    );
+    Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
+      configurable: true,
+      get: () => 400,
+    });
+
+    try {
+      const view = render(
+        <LogPanel game={game} onChannelChange={vi.fn()} selectedChannel="all" />,
+      );
+      const scroll = screen.getByRole('region', { name: 'Log entries' }) as HTMLDivElement;
+      expect(scroll.scrollTop).toBe(400);
+
+      scroll.scrollTop = 0;
+      fireEvent.scroll(scroll);
+      expect(screen.getByRole('button', { name: 'Jump to latest' })).toBeDefined();
+
+      view.rerender(
+        <LogPanel game={game} onChannelChange={vi.fn()} selectedChannel="quest:a1" />,
+      );
+      expect(scroll.scrollTop).toBe(400);
+      expect(screen.queryByRole('button', { name: 'Jump to latest' })).toBeNull();
+
+      scroll.scrollTop = 0;
+      fireEvent.scroll(scroll);
+      fireEvent.click(screen.getByRole('button', { name: '✓ Combat' }));
+      expect(scroll.scrollTop).toBe(400);
+      expect(screen.queryByRole('button', { name: 'Jump to latest' })).toBeNull();
+    } finally {
+      if (originalScrollHeight) {
+        Object.defineProperty(HTMLElement.prototype, 'scrollHeight', originalScrollHeight);
+      } else {
+        Reflect.deleteProperty(HTMLElement.prototype, 'scrollHeight');
+      }
+    }
+  });
 });

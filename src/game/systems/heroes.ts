@@ -135,6 +135,7 @@ export function grantXp(
       simMs,
     );
     events.push({ type: 'log', line });
+    events.push({ type: 'levelUp', heroId: hero.id, level: hero.level });
   }
   if (hero.level >= HERO_LEVEL_CAP) hero.xp = 0;
 }

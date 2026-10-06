@@ -54,7 +54,12 @@ describe('skill progression', () => {
       category: 'skill',
       text: `${result.hero.name} has become better at Defense! (1)`,
     });
-    expect(events).toHaveLength(1);
+    expect(events).toContainEqual({
+      type: 'skillUp',
+      heroId: result.hero.id,
+      skill: 'defense',
+      value: 1,
+    });
   });
 
   it('matches the seeded skill-up probability at a fixed value', () => {

@@ -55,6 +55,7 @@ export function trySkillUp(
     simMs,
   );
   events.push({ type: 'log', line });
+  events.push({ type: 'skillUp', heroId: hero.id, skill, value: nextValue });
 }
 
 export function recordSkillUse(

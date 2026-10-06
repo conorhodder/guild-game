@@ -33,6 +33,11 @@ describe('combat resolver', () => {
     expect(first).toEqual(second);
     expect(first.result.outcome).toBe('won');
     expect(first.state.seenMonsters).toEqual(['marsh-rat']);
+    expect(first.events).toContainEqual({
+      type: 'kill',
+      monsterId: 'marsh-rat',
+      named: false,
+    });
     expect(
       first.state.log
         .filter((line) => line.channel === 'combat:test')

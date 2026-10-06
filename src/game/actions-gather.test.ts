@@ -26,7 +26,7 @@ describe('gather actions', () => {
       heroId,
       skill: 'mining',
       startedAt: 0,
-      nextYieldAt: 59_000,
+      nextYieldAt: 60_000,
       yields: 0,
     });
     expect(result.state.heroes[heroId]?.activityId).toBe(activity?.id);

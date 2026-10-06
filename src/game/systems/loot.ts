@@ -18,6 +18,7 @@ export function rollLoot(
   if (gold > 0) {
     const line = appendLog(state, channel, 'loot', `You receive ${gold} gold.`, undefined, simMs);
     events.push({ type: 'log', line });
+    events.push({ type: 'gold', amount: gold });
   }
 
   for (const entry of table.entries) {
@@ -46,5 +47,6 @@ export function rollLoot(
       simMs,
     );
     events.push({ type: 'log', line });
+    events.push({ type: 'loot', itemId: item.id, rarity: item.rarity });
   }
 }

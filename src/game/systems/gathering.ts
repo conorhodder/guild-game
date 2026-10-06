@@ -25,8 +25,9 @@ export function gatheringIntervalMs(
   skill: GatherSkill,
   skillValue: number,
 ): number | null {
-  const best = bestGatheringMaterial(skill, skillValue);
-  return best ? Math.max(20, 60 - best.value / 2) * 1000 : null;
+  return bestGatheringMaterial(skill, skillValue)
+    ? Math.max(20, 60 - skillValue / 2) * 1000
+    : null;
 }
 
 export function rollGatheringMaterial(
@@ -104,6 +105,7 @@ export const gatheringSystem: SimSystem = (state, tickMs, events) => {
     const channel = gatherChannel(hero.id);
     const line = appendLog(state, channel, 'loot', `You receive ${material.name}.`, undefined, tickMs);
     events.push({ type: 'log', line });
+    events.push({ type: 'loot', itemId: material.id, rarity: material.rarity });
     trySkillUp(
       state,
       hero,

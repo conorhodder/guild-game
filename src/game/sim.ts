@@ -1,4 +1,5 @@
 import type { GameState, LogLine } from './types';
+import type { CombatSkill, GatherSkill, Rarity } from './types';
 import { campSystem } from './systems/camps';
 import { fatigueSystem } from './systems/fatigue';
 import { gatheringSystem } from './systems/gathering';
@@ -9,7 +10,25 @@ import { TICK_MS } from './tick';
 
 export { TICK_MS };
 
-export type SimEvent = { type: 'log'; line: LogLine };
+export type SimEvent =
+  | { type: 'log'; line: LogLine }
+  | { type: 'kill'; monsterId: string; named: boolean }
+  | { type: 'knockout'; heroId: string }
+  | {
+      type: 'quest';
+      questId: string;
+      outcome: 'complete' | 'failed';
+      simMs?: number;
+    }
+  | { type: 'gold'; amount: number }
+  | { type: 'loot'; itemId: string; rarity: Rarity }
+  | {
+      type: 'skillUp';
+      heroId: string;
+      skill: CombatSkill | GatherSkill;
+      value: number;
+    }
+  | { type: 'levelUp'; heroId: string; level: number };
 export type SimSystem = (state: GameState, tickMs: number, events: SimEvent[]) => void;
 
 // Keep this order stable as systems are added:

@@ -31,13 +31,13 @@ function startMining(seed: number, skillValue: number) {
 }
 
 describe('gathering system', () => {
-  it('uses the best available tier and its value to set the yield interval', () => {
-    expect(gatheringIntervalMs('mining', 1)).toBe(59_000);
-    expect(gatheringIntervalMs('mining', 5)).toBe(54_000);
-    expect(gatheringIntervalMs('mining', 10)).toBe(45_000);
-    expect(gatheringIntervalMs('herbalism', 1)).toBe(58_500);
-    expect(gatheringIntervalMs('herbalism', 4)).toBe(56_000);
-    expect(gatheringIntervalMs('herbalism', 10)).toBe(44_000);
+  it('uses the hero skill value to set the yield interval', () => {
+    expect(gatheringIntervalMs('mining', 1)).toBe(59_500);
+    expect(gatheringIntervalMs('mining', 5)).toBe(57_500);
+    expect(gatheringIntervalMs('mining', 10)).toBe(55_000);
+    expect(gatheringIntervalMs('herbalism', 1)).toBe(59_500);
+    expect(gatheringIntervalMs('herbalism', 4)).toBe(58_000);
+    expect(gatheringIntervalMs('herbalism', 10)).toBe(55_000);
   });
 
   it('yields one best-or-lower tier material with a loot log and persisted count', () => {
