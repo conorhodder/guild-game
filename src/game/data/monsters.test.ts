@@ -7,10 +7,10 @@ describe('monster data', () => {
     const ids = monsters.map((monster) => monster.id);
 
     expect(new Set(ids).size).toBe(ids.length);
-    expect(monsters).toHaveLength(10);
+    expect(monsters.length).toBeGreaterThanOrEqual(20);
     for (const monster of monsters) {
       expect(monster.level).toBeGreaterThanOrEqual(1);
-      expect(monster.level).toBeLessThanOrEqual(14);
+      expect(monster.level).toBeLessThanOrEqual(20);
       for (const entry of monster.lootTable.entries) {
         expect(itemsById[entry.itemId]).toBeDefined();
         expect(entry.chance).toBeGreaterThan(0);

@@ -71,6 +71,30 @@ describe('save format', () => {
     expect(state.seenMonsters).toEqual([]);
   });
 
+  it('adds camp counters when migrating active camps from v4', () => {
+    const fixture = JSON.parse(
+      JSON.stringify(fixtureFiles['./fixtures/v4.json']),
+    ) as { version: number; state: { activities: Record<string, unknown> } };
+    fixture.state.activities.a4 = {
+      kind: 'camp',
+      id: 'a4',
+      zoneId: 'reedlands',
+      campId: 'marsh-edge',
+      heroIds: ['h1'],
+      startedAt: 0,
+      spawnReadyAt: 0,
+      nextSpawnNamed: false,
+    };
+
+    const state = loadEnvelope(JSON.stringify(fixture));
+    expect(state.activities.a4).toMatchObject({
+      kind: 'camp',
+      kills: 0,
+      namedKills: 0,
+      recallAt: null,
+    });
+  });
+
   it('round-trips JSON and UTF-8 base64 saves', () => {
     const state = createNewGame({
       seed: 42,

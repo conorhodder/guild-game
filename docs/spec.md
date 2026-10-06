@@ -250,15 +250,17 @@ within ±10% relative of its data rate.
 
 ### Zones and camps (TF-11, AC-6, J3)
 
-Zone data: `{ id, name, levelRange, camps: { id, name, placeholder: monsterId, named?: { monsterId, chance }, respawnSec }[] }`.
+Zone data: `{ id, name, levelRange, camps: { id, name, monsters: string[], namedId?, namedChance, respawnSec }[] }`.
+`namedChance` is between 0.05 and 0.12; `respawnSec` is between 60 and 180.
 A camping party fights the current spawn when `spawnReadyAt <= t`. When a spawn
-is scheduled, `nextSpawnNamed` is rolled with `named.chance`. After each fight,
+is scheduled, `nextSpawnNamed` is rolled with `namedChance`. After each fight,
 `spawnReadyAt = fightEnd + respawnSec`. Monsters are added to `seenMonsters`
 when fought, and the named lookup shows a named monster's drop list only once
-it has been seen. Recall ends the camp immediately, keeps everything earned and
-sends the heroes back *Idle*. Automatic retreat happens when no member can fight
-(every member knocked out, or every remaining member at fatigue >= 90). The
-zone screen shows con, respawn timers and the current spawn per camp.
+it has been seen. Recall ends the camp on the next simulation tick, keeps
+everything earned and sends the heroes back *Idle*. Automatic retreat happens
+when fewer than half of the starting party remain or any current member reaches
+fatigue 100; a full-party wipe ends the camp. Active camps retain kill and named
+kill counts in their activity state.
 
 ### Recruitment (TF-12, AC-2, J4)
 

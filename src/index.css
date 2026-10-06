@@ -439,6 +439,58 @@ select {
   width: min(100%, 30rem);
 }
 
+.zone-board {
+  max-width: 62rem;
+}
+
+.zone-board h2,
+.zone-card h3,
+.active-camp h4 {
+  color: #f0c869;
+}
+
+.zone-party {
+  display: grid;
+  gap: 0.6rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #62563f;
+}
+
+.zone-list,
+.camp-list,
+.active-camps {
+  display: grid;
+  gap: 1rem;
+}
+
+.zone-card,
+.camp-card,
+.active-camp {
+  padding: 1rem;
+  border: 1px solid #62563f;
+  border-radius: 0.35rem;
+  background: #29241c;
+}
+
+.zone-card > h3,
+.camp-card h4,
+.active-camp h4 {
+  margin-top: 0;
+}
+
+.camp-list {
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.active-camps {
+  margin-top: 2rem;
+}
+
+.active-camp button + button {
+  margin-left: 0.5rem;
+}
+
 .hero-details {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

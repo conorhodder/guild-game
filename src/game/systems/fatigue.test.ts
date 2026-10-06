@@ -32,12 +32,15 @@ describe('fatigue system', () => {
       camp: {
         kind: 'camp' as const,
         id: 'a2',
-        zoneId: 'marsh',
-        campId: 'a2',
+        zoneId: 'reedlands',
+        campId: 'marsh-edge',
         heroIds: [hero.id],
         startedAt: 0,
         spawnReadyAt: 60_000,
         nextSpawnNamed: false,
+        kills: 0,
+        namedKills: 0,
+        recallAt: null,
       },
       gather: {
         kind: 'gather' as const,

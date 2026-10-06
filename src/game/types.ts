@@ -75,6 +75,9 @@ export type Activity =
       startedAt: number;
       spawnReadyAt: number;
       nextSpawnNamed: boolean;
+      kills: number;
+      namedKills: number;
+      recallAt: number | null;
     }
   | {
       kind: 'gather';

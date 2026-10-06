@@ -7,9 +7,11 @@ import {
   rest,
   sell,
   sellMaterial,
+  startCamp,
   unequip,
 } from './game/actions';
-import { questChannel } from './game/activityChannels';
+import { campChannel, questChannel } from './game/activityChannels';
+import { campsById } from './game/data/zones';
 import { questsById } from './game/data/quests';
 import { SettingsPanel } from './ui/SettingsPanel';
 import { FoundGuildForm } from './ui/FoundGuildForm';
@@ -18,6 +20,7 @@ import { QuestBoard } from './ui/QuestBoard';
 import { RosterPanel } from './ui/RosterPanel';
 import { StashPanel } from './ui/StashPanel';
 import { Tabs } from './ui/Tabs';
+import { ZoneBoard } from './ui/ZoneBoard';
 import { formatSimClock } from './ui/formatSimTime';
 import { gameStore, useGame, useSaveNotice } from './store';
 
@@ -58,18 +61,26 @@ export default function App() {
     );
   }
 
-  const questChannels = new Set(
+  const activityChannels = new Set(
     game.log
       .map((line) => line.channel)
-      .filter((channel) => channel.startsWith('quest:')),
+      .filter((channel) => channel.startsWith('quest:') || channel.startsWith('camp:')),
   );
   for (const activity of Object.values(game.activities)) {
-    if (activity.kind === 'quest') questChannels.add(questChannel(activity.id, activity.questId));
+    if (activity.kind === 'quest') {
+      activityChannels.add(questChannel(activity.id, activity.questId));
+    }
+    if (activity.kind === 'camp') {
+      activityChannels.add(campChannel(activity.id, activity.campId));
+    }
   }
-  const questChannelNames = Object.fromEntries(
-    Array.from(questChannels, (channel) => {
-      const questId = channel.split(':')[2] ?? '';
-      return [channel, questsById[questId]?.name ?? 'Quest'];
+  const channelNames = Object.fromEntries(
+    Array.from(activityChannels, (channel) => {
+      const [kind, , activityId] = channel.split(':');
+      const name = kind === 'quest'
+        ? questsById[activityId ?? '']?.name ?? 'Quest'
+        : campsById[activityId ?? '']?.name ?? 'Camp';
+      return [channel, name];
     }),
   );
 
@@ -119,6 +130,23 @@ export default function App() {
             ),
           },
           {
+            id: 'zones',
+            label: 'Zones',
+            panel: (
+              <ZoneBoard
+                game={game}
+                onStartCamp={(zoneId, campId, heroIds) =>
+                  gameStore.dispatch(startCamp(zoneId, campId, heroIds))
+                }
+                onRecall={(activityId) => gameStore.dispatch(recall(activityId))}
+                onViewLog={(channel) => {
+                  setLogChannel(channel);
+                  setActiveTab('log');
+                }}
+              />
+            ),
+          },
+          {
             id: 'stash',
             label: 'Stash',
             panel: (
@@ -137,7 +165,7 @@ export default function App() {
             panel: (
               <LogPanel
                 game={game}
-                channelNames={questChannelNames}
+                channelNames={channelNames}
                 onChannelChange={setLogChannel}
                 selectedChannel={logChannel}
               />

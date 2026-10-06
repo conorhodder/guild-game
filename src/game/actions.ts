@@ -1,4 +1,5 @@
 import { itemsById, starterGear } from './data/items';
+import { campsById, zonesById } from './data/zones';
 import { createItemInstance } from './itemIds';
 import { rngPick } from './rng';
 import type { GameState, Hero, ItemData, ItemInstance, Slot } from './types';
@@ -6,7 +7,9 @@ import { appendLog } from './systems/log';
 import { createHero, heroStatus } from './systems/heroes';
 import { questsById } from './data/quests';
 import { encounterTime } from './questSchedule';
-import { questChannel } from './activityChannels';
+import { campChannel, questChannel } from './activityChannels';
+import { rollNamedSpawn } from './systems/camps';
+import { TICK_MS } from './tick';
 
 export interface GameActionResult {
   state: GameState;
@@ -261,6 +264,64 @@ export function dispatchQuest(questId: string, heroIds: string[]): GameAction {
   };
 }
 
+export function startCamp(zoneId: string, campId: string, heroIds: string[]): GameAction {
+  return (currentState) => {
+    const zone = zonesById[zoneId];
+    const camp = campsById[campId];
+    if (!zone || !camp || !zone.camps.some((candidate) => candidate.id === campId)) {
+      return { state: currentState, reason: 'Camp not found.' };
+    }
+    if (
+      Object.values(currentState.activities).some(
+        (activity) => activity.kind === 'camp' && activity.campId === campId,
+      )
+    ) {
+      return { state: currentState, reason: 'That camp already has a party.' };
+    }
+    if (heroIds.length < 1 || heroIds.length > 4) {
+      return { state: currentState, reason: 'Choose between 1 and 4 heroes.' };
+    }
+    if (new Set(heroIds).size !== heroIds.length) {
+      return { state: currentState, reason: 'Choose each hero only once.' };
+    }
+    for (const heroId of heroIds) {
+      const reason = getQuestEligibilityReason(currentState, heroId);
+      if (reason) return { state: currentState, reason };
+    }
+
+    const state = structuredClone(currentState);
+    const id = `a${state.nextId}`;
+    state.nextId += 1;
+    const startedAt = state.clock.simMs;
+    state.activities[id] = {
+      kind: 'camp',
+      id,
+      zoneId,
+      campId,
+      heroIds: [...heroIds],
+      startedAt,
+      spawnReadyAt: startedAt,
+      nextSpawnNamed: rollNamedSpawn(state, camp),
+      kills: 0,
+      namedKills: 0,
+      recallAt: null,
+    };
+    for (const heroId of heroIds) {
+      const hero = state.heroes[heroId];
+      if (hero) hero.activityId = id;
+    }
+    appendLog(
+      state,
+      campChannel(id, campId),
+      'system',
+      `Your party has started camping at ${camp.name}.`,
+      undefined,
+      startedAt,
+    );
+    return { state };
+  };
+}
+
 export function rest(heroId: string): GameAction {
   return (currentState) => {
     const hero = currentState.heroes[heroId];
@@ -293,6 +354,18 @@ export function recall(activityId: string): GameAction {
   return (currentState) => {
     const activity = currentState.activities[activityId];
     if (!activity) return { state: currentState, reason: 'Activity not found.' };
+    if (activity.kind === 'camp') {
+      if (activity.recallAt !== null) {
+        return { state: currentState, reason: 'Recall is already pending.' };
+      }
+      const state = structuredClone(currentState);
+      const camp = state.activities[activityId];
+      if (!camp || camp.kind !== 'camp') {
+        return { state: currentState, reason: 'Activity not found.' };
+      }
+      camp.recallAt = Math.floor(state.clock.simMs / TICK_MS + 1) * TICK_MS;
+      return { state };
+    }
     if (activity.kind !== 'rest') {
       return { state: currentState, reason: 'That activity cannot be recalled yet.' };
     }

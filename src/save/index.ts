@@ -1,6 +1,7 @@
 import { itemsById } from '../game/data/items';
 import { monstersById } from '../game/data/monsters';
 import { questsById } from '../game/data/quests';
+import { campsById, zonesById } from '../game/data/zones';
 import type {
   Activity,
   ClassId,
@@ -13,7 +14,7 @@ import type {
 } from '../game/types';
 
 export const SAVE_KEY = 'guildmasters-ledger.save';
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 
 export interface SaveEnvelope {
   format: 'tgl-save';
@@ -48,6 +49,25 @@ export const migrations: Record<number, Migration> = {
     return {
       ...state,
       seenMonsters: state.seenMonsters ?? [],
+    };
+  },
+  4: (state) => {
+    if (!isRecord(state) || !isRecord(state.activities)) return state;
+    return {
+      ...state,
+      activities: Object.fromEntries(
+        Object.entries(state.activities).map(([id, activity]) => [
+          id,
+          isRecord(activity) && activity.kind === 'camp'
+            ? {
+                ...activity,
+                kills: activity.kills ?? 0,
+                namedKills: activity.namedKills ?? 0,
+                recallAt: activity.recallAt ?? null,
+              }
+            : activity,
+        ]),
+      ),
     };
   },
 };
@@ -151,16 +171,29 @@ function isActivity(value: unknown): value is Activity {
     );
   }
   if (value.kind === 'camp') {
+    const zone = typeof value.zoneId === 'string' ? zonesById[value.zoneId] : undefined;
+    const camp = typeof value.campId === 'string' ? campsById[value.campId] : undefined;
     return (
-      typeof value.zoneId === 'string' &&
-      typeof value.campId === 'string' &&
+      zone !== undefined &&
+      camp !== undefined &&
+      zone.camps.some((zoneCamp) => zoneCamp.id === camp.id) &&
       Array.isArray(value.heroIds) &&
       value.heroIds.every((id) => typeof id === 'string') &&
+      new Set(value.heroIds).size === value.heroIds.length &&
+      value.heroIds.length >= 1 &&
+      value.heroIds.length <= 4 &&
       typeof value.startedAt === 'number' &&
       Number.isFinite(value.startedAt) &&
       typeof value.spawnReadyAt === 'number' &&
       Number.isFinite(value.spawnReadyAt) &&
-      typeof value.nextSpawnNamed === 'boolean'
+      typeof value.nextSpawnNamed === 'boolean' &&
+      Number.isInteger(value.kills) &&
+      (value.kills as number) >= 0 &&
+      Number.isInteger(value.namedKills) &&
+      (value.namedKills as number) >= 0 &&
+      (value.namedKills as number) <= (value.kills as number) &&
+      (value.recallAt === null ||
+        (typeof value.recallAt === 'number' && Number.isFinite(value.recallAt)))
     );
   }
   if (value.kind === 'gather') {

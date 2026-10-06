@@ -1,0 +1,24 @@
+{
+  "format": "tgl-save",
+  "version": 4,
+  "savedAt": 1700000180000,
+  "state": {
+    "guildName": "",
+    "gold": 50,
+    "clock": {
+      "simMs": 0,
+      "lastWallMs": 1700000000000
+    },
+    "rng": 424242,
+    "nextId": 1,
+    "heroes": {},
+    "heroOrder": [],
+    "activities": {},
+    "itemInstances": {},
+    "stash": {},
+    "materials": {},
+    "seenMonsters": [],
+    "log": [],
+    "nextLogId": 1
+  }
+}
