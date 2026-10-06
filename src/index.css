@@ -653,3 +653,35 @@ select {
   padding: 1rem;
   border: 1px solid #b87a46;
 }
+
+.ledger-definitions {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) 2fr;
+  max-width: 52rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.ledger-definitions > div {
+  display: contents;
+}
+
+.ledger-definitions dt,
+.ledger-definitions dd {
+  margin: 0;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid #514733;
+}
+
+.ledger-definitions dt {
+  color: #b8b09a;
+}
+
+.ledger-definitions dd {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .ledger-definitions {
+    grid-template-columns: minmax(8rem, 1fr) 1.5fr;
+  }
+}

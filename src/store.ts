@@ -8,6 +8,7 @@ import { loadEnvelope, SAVE_KEY, serialize } from './save';
 
 const AUTOSAVE_MS = 30_000;
 const CLOCK_INTERVAL_MS = 1000;
+const SESSION_GAP_MS = 30 * 60_000;
 
 export interface StorageLike {
   getItem(key: string): string | null;
@@ -34,6 +35,47 @@ function randomSeed(): number {
   const values = new Uint32Array(1);
   globalThis.crypto.getRandomValues(values);
   return values[0] ?? 0;
+}
+
+function localDateKey(wallMs: number): string {
+  const date = new Date(wallMs);
+  return [
+    String(date.getFullYear()).padStart(4, '0'),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+  ].join('-');
+}
+
+function startLedgerSession(state: GameState, wallMs: number): GameState {
+  return {
+    ...state,
+    ledger: {
+      ...state.ledger,
+      sessions: state.ledger.sessions + 1,
+      lastActiveWall: Math.max(state.ledger.lastActiveWall, wallMs),
+    },
+  };
+}
+
+function recordLedgerAction(state: GameState, wallMs: number): GameState {
+  const ledger = state.ledger;
+  const day = localDateKey(wallMs);
+  const highestHeroLevel = state.heroOrder.reduce(
+    (highest, heroId) => Math.max(highest, state.heroes[heroId]?.level ?? 0),
+    ledger.highestLevel,
+  );
+
+  return {
+    ...state,
+    ledger: {
+      ...ledger,
+      sessions:
+        ledger.sessions + (wallMs - ledger.lastActiveWall > SESSION_GAP_MS ? 1 : 0),
+      lastActiveWall: Math.max(ledger.lastActiveWall, wallMs),
+      playDays: ledger.playDays.includes(day) ? ledger.playDays : [...ledger.playDays, day],
+      highestLevel: highestHeroLevel,
+    },
+  };
 }
 
 export class GameStore {
@@ -65,7 +107,6 @@ export class GameStore {
     const rawSave = this.storage.getItem(SAVE_KEY);
     if (rawSave === null) {
       this.state = this.createGame();
-      this.saveNow();
     } else {
       try {
         this.state = loadEnvelope(rawSave);
@@ -78,7 +119,9 @@ export class GameStore {
       }
     }
 
+    if (this.state) this.state = startLedgerSession(this.state, this.now());
     this.syncClock(true);
+    this.saveNow();
     this.document.addEventListener('visibilitychange', this.visibilityHandler);
     this.startClockTimer();
     this.autosaveTimer = setInterval(() => this.saveNow(), AUTOSAVE_MS);
@@ -103,12 +146,13 @@ export class GameStore {
 
   dispatch(action: GameAction): string | null {
     if (!this.state) throw new Error('A new game must be started before dispatching actions.');
-    const result = action(this.state, this.now());
+    const wallMs = this.now();
+    const result = action(this.state, wallMs);
     if (isGameActionResult(result)) {
       if (result.reason) return result.reason;
-      this.state = result.state;
+      this.state = recordLedgerAction(result.state, wallMs);
     } else {
-      this.state = result;
+      this.state = recordLedgerAction(result, wallMs);
     }
     this.saveNow();
     this.notify();
@@ -117,7 +161,7 @@ export class GameStore {
 
   startNewGame(): void {
     if (this.state) return;
-    this.state = this.createGame();
+    this.state = startLedgerSession(this.createGame(), this.now());
     this.saveNotice = null;
     this.saveNow();
     this.notify();

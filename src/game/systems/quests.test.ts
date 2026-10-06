@@ -36,6 +36,15 @@ describe('quest system', () => {
       channel: expect.stringContaining('quest:'),
       highlight: true,
     });
+    expect(initial.ledger).toMatchObject({
+      firstDispatchAt: 0,
+      firstDispatchWall: 0,
+    });
+    expect(first.state.ledger).toMatchObject({
+      firstQuestCompleteAt: 120_000,
+      questsCompleted: 1,
+      totalSimMsPlayed: 120_000,
+    });
   });
 
   it('is invariant to chunking a running quest over 3,600 seconds', () => {
@@ -47,6 +56,7 @@ describe('quest system', () => {
     const single = advance(initial, 3_600_000).state;
 
     expect(chunked).toEqual(single);
+    expect(chunked.ledger).toEqual(single.ledger);
   });
 
   it('fails and removes a quest when every party member is knocked out', () => {

@@ -23,6 +23,7 @@ function expectCurrentShape(state: GameState) {
       'clock',
       'gold',
       'guildName',
+      'ledger',
       'heroOrder',
       'heroes',
       'itemInstances',
@@ -113,6 +114,24 @@ describe('save format', () => {
     });
   });
 
+  it('adds a lifetime ledger when migrating the v7 save', () => {
+    const fixture = fixtureFiles['./fixtures/v7.json'];
+    const state = loadEnvelope(JSON.stringify(fixture));
+
+    expect(state.ledger).toMatchObject({
+      firstLoadWall: 1_700_000_000_000,
+      firstDispatchAt: null,
+      firstDispatchWall: null,
+      firstQuestCompleteAt: null,
+      sessions: 0,
+      lastActiveWall: 1_700_000_000_000,
+      highestLevel: 2,
+      totalSimMsPlayed: 30_000,
+      kills: 0,
+      itemsByRarity: { common: 0, uncommon: 0, rare: 0, named: 0 },
+    });
+  });
+
   it('round-trips JSON and UTF-8 base64 saves', () => {
     const state = createNewGame({
       seed: 42,
@@ -146,6 +165,31 @@ describe('save format', () => {
     expect(isGameState({ ...state, materials: { 'copper-ore': 0 } })).toBe(false);
     expect(isGameState({ ...state, seenMonsters: [1] })).toBe(false);
     expect(isGameState({ ...state, seenMonsters: ['unknown-monster'] })).toBe(false);
+    expect(
+      isGameState({
+        ...state,
+        ledger: { ...state.ledger, kills: -1 },
+      }),
+    ).toBe(false);
+    expect(
+      isGameState({
+        ...state,
+        ledger: {
+          ...state.ledger,
+          itemsByRarity: { ...state.ledger.itemsByRarity, common: 1.5 },
+        },
+      }),
+    ).toBe(false);
+    expect(
+      isGameState({
+        ...state,
+        ledger: {
+          ...state.ledger,
+          namedKills: 1,
+          namedMonstersSlainById: { 'unknown-monster': 1 },
+        },
+      }),
+    ).toBe(false);
     expect(
       isGameState({ ...state, recruitment: { ...state.recruitment, candidates: [] } }),
     ).toBe(false);

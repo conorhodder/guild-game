@@ -26,6 +26,7 @@ describe('App', () => {
     expect(screen.getByRole('tab', { name: 'Recruit' })).toBeDefined();
     expect(screen.getByRole('tab', { name: 'Stash' })).toBeDefined();
     expect(screen.getByRole('tab', { name: 'Log' })).toBeDefined();
+    expect(screen.getByRole('tab', { name: 'Ledger' })).toBeDefined();
     expect(screen.getByRole('tab', { name: 'Settings' })).toBeDefined();
     expect(screen.getByText('The Wayfarers')).toBeDefined();
     expect(screen.getByRole('button', { name: /Warrior.*Level 1/ })).toBeDefined();
@@ -52,6 +53,9 @@ describe('App', () => {
       `quest:${activeQuest.id}:${activeQuest.questId}`,
     );
     expect(screen.getByText('Your party has set out on Rats in the Cellar.')).toBeDefined();
+    fireEvent.click(screen.getByRole('tab', { name: 'Ledger' }));
+    expect(screen.getByRole('heading', { name: 'Guild Ledger' })).toBeDefined();
+    expect(screen.getByText('The Ledger never leaves this device.')).toBeDefined();
   });
 
   it('reports an invalid import without changing the current game', () => {

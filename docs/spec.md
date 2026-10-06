@@ -304,12 +304,19 @@ focus when dismissed.
 ```ts
 interface Ledger { firstLoadWall: number; firstDispatchWall: number | null; sessions: number;
   lastActiveWall: number; playDays: string[]; kills: number; namedKills: number;
-  namedDrops: number; highestLevel: number; questsCompleted: number }
+  firstDispatchAt: number | null; firstQuestCompleteAt: number | null;
+  namedDrops: number; highestLevel: number; questsCompleted: number; questsFailed: number;
+  goldEarned: number; itemsByRarity: Record<Rarity, number>; knockouts: number;
+  skillUps: number; levelsGained: number; totalSimMsPlayed: number;
+  namedMonstersSlainById: Record<string, number> }
 ```
 A session starts on load, or after more than 30 minutes with no actions.
 `playDays` holds local `YYYY-MM-DD` dates on which the player took at least one
-state-changing action. The Ledger screen shows every stat and has an "Export
-ledger" (JSON) button.
+state-changing action. Structured simulation events are folded into the lifetime
+counters after each `advance`; dispatch actions record their first wall and
+simulation timestamps. The Ledger screen shows every stat, a named-slay list
+and an "Export ledger (JSON)" button. The export contains only the Ledger and is
+downloaded locally; the Ledger never leaves the device.
 
 ## 6. UI
 

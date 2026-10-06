@@ -10,16 +10,19 @@ import {
 import type {
   Activity,
   ClassId,
+  GuildLedger,
   GameState,
   Hero,
   ItemInstance,
   LogCategory,
   LogLine,
+  Rarity,
   Slot,
 } from '../game/types';
+import { createGuildLedger } from '../game/systems/ledger';
 
 export const SAVE_KEY = 'guildmasters-ledger.save';
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 
 export interface SaveEnvelope {
   format: 'tgl-save';
@@ -115,6 +118,49 @@ export const migrations: Record<number, Migration> = {
             : activity,
         ]),
       ),
+    };
+  },
+  7: (state) => {
+    if (!isRecord(state) || !isRecord(state.clock) || !isRecord(state.heroes)) return state;
+    const simMs =
+      typeof state.clock.simMs === 'number' && Number.isFinite(state.clock.simMs)
+        ? state.clock.simMs
+        : 0;
+    const wallMs =
+      typeof state.clock.lastWallMs === 'number' &&
+      Number.isFinite(state.clock.lastWallMs)
+        ? state.clock.lastWallMs
+        : 0;
+    const highestLevel = Object.values(state.heroes).reduce<number>(
+      (highest, hero) =>
+        isRecord(hero) && typeof hero.level === 'number'
+          ? Math.max(highest, hero.level)
+          : highest,
+      0,
+    );
+    const defaults = createGuildLedger(wallMs, simMs, highestLevel);
+    const previous = isRecord(state.ledger) ? state.ledger : {};
+    const previousItems = isRecord(previous.itemsByRarity)
+      ? previous.itemsByRarity
+      : {};
+    const previousNamedKills = isRecord(previous.namedMonstersSlainById)
+      ? previous.namedMonstersSlainById
+      : {};
+
+    return {
+      ...state,
+      ledger: {
+        ...defaults,
+        ...previous,
+        itemsByRarity: {
+          ...defaults.itemsByRarity,
+          ...previousItems,
+        },
+        namedMonstersSlainById: {
+          ...defaults.namedMonstersSlainById,
+          ...previousNamedKills,
+        },
+      },
     };
   },
 };
@@ -273,6 +319,131 @@ function isItemInstance(value: unknown): value is ItemInstance {
   );
 }
 
+const rarities: Rarity[] = ['common', 'uncommon', 'rare', 'named'];
+const ledgerFields = [
+  'firstLoadWall',
+  'firstDispatchWall',
+  'firstDispatchAt',
+  'firstQuestCompleteAt',
+  'sessions',
+  'lastActiveWall',
+  'playDays',
+  'kills',
+  'namedKills',
+  'namedDrops',
+  'highestLevel',
+  'questsCompleted',
+  'questsFailed',
+  'goldEarned',
+  'itemsByRarity',
+  'knockouts',
+  'skillUps',
+  'levelsGained',
+  'totalSimMsPlayed',
+  'namedMonstersSlainById',
+] as const;
+
+function isGuildLedger(
+  value: unknown,
+  simMs: number,
+  heroes: Record<string, unknown>,
+): value is GuildLedger {
+  if (!isRecord(value)) return false;
+  const itemsByRarity = value.itemsByRarity;
+  const namedMonstersSlainById = value.namedMonstersSlainById;
+  if (
+    !isRecord(itemsByRarity) ||
+    !isRecord(namedMonstersSlainById) ||
+    Object.keys(value).length !== ledgerFields.length ||
+    !ledgerFields.every((field) => Object.prototype.hasOwnProperty.call(value, field)) ||
+    Object.keys(itemsByRarity).length !== rarities.length ||
+    !Object.keys(itemsByRarity).every((rarity) => rarities.includes(rarity as Rarity))
+  ) {
+    return false;
+  }
+  const counterNames = [
+    'sessions',
+    'kills',
+    'namedKills',
+    'namedDrops',
+    'highestLevel',
+    'questsCompleted',
+    'questsFailed',
+    'knockouts',
+    'skillUps',
+    'levelsGained',
+  ] as const;
+  const nullableTimes = ['firstDispatchWall', 'firstDispatchAt', 'firstQuestCompleteAt'] as const;
+  const maxHeroLevel = Object.values(heroes).reduce<number>(
+    (highest, hero) =>
+      isRecord(hero) && typeof hero.level === 'number'
+        ? Math.max(highest, hero.level)
+        : highest,
+    0,
+  );
+  const namedKillTotal = Object.values(namedMonstersSlainById).reduce<number>(
+    (total, count) =>
+      typeof count === 'number' && Number.isInteger(count) ? total + count : total,
+    0,
+  );
+
+  return (
+    typeof value.firstLoadWall === 'number' &&
+    Number.isFinite(value.firstLoadWall) &&
+    typeof value.lastActiveWall === 'number' &&
+    Number.isFinite(value.lastActiveWall) &&
+    nullableTimes.every(
+      (key) =>
+        value[key] === null ||
+        (typeof value[key] === 'number' &&
+          Number.isFinite(value[key]) &&
+          (key === 'firstDispatchWall' ||
+            ((value[key] as number) >= 0 && (value[key] as number) <= simMs))),
+    ) &&
+    (value.firstDispatchWall === null) === (value.firstDispatchAt === null) &&
+    counterNames.every(
+      (key) =>
+        typeof value[key] === 'number' &&
+        Number.isInteger(value[key]) &&
+        (value[key] as number) >= 0,
+    ) &&
+    typeof value.highestLevel === 'number' &&
+    value.highestLevel <= 20 &&
+    value.highestLevel >= maxHeroLevel &&
+    typeof value.goldEarned === 'number' &&
+    Number.isFinite(value.goldEarned) &&
+    value.goldEarned >= 0 &&
+    typeof value.totalSimMsPlayed === 'number' &&
+    Number.isFinite(value.totalSimMsPlayed) &&
+    value.totalSimMsPlayed >= 0 &&
+    value.totalSimMsPlayed <= simMs &&
+    Array.isArray(value.playDays) &&
+    value.playDays.every(
+      (day) => typeof day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(day),
+    ) &&
+    new Set(value.playDays).size === value.playDays.length &&
+    rarities.every(
+      (rarity) =>
+        typeof itemsByRarity[rarity] === 'number' &&
+        Number.isInteger(itemsByRarity[rarity]) &&
+        (itemsByRarity[rarity] as number) >= 0,
+    ) &&
+    typeof value.namedDrops === 'number' &&
+    value.namedDrops === itemsByRarity.named &&
+    typeof value.namedKills === 'number' &&
+    typeof value.kills === 'number' &&
+    value.namedKills <= value.kills &&
+    namedKillTotal === value.namedKills &&
+    Object.entries(namedMonstersSlainById).every(
+      ([monsterId, count]) =>
+        monstersById[monsterId]?.named === true &&
+        typeof count === 'number' &&
+        Number.isInteger(count) &&
+        count > 0,
+    )
+  );
+}
+
 export function isGameState(value: unknown): value is GameState {
   if (
     !isRecord(value) ||
@@ -280,6 +451,7 @@ export function isGameState(value: unknown): value is GameState {
     !isRecord(value.itemInstances) ||
     !isRecord(value.stash) ||
     !isRecord(value.recruitment) ||
+    !isRecord(value.ledger) ||
     !Array.isArray(value.seenMonsters)
   ) {
     return false;
@@ -293,6 +465,7 @@ export function isGameState(value: unknown): value is GameState {
     Number.isFinite(value.gold) &&
     typeof value.clock.simMs === 'number' &&
     Number.isFinite(value.clock.simMs) &&
+    value.clock.simMs >= 0 &&
     typeof value.clock.lastWallMs === 'number' &&
     Number.isFinite(value.clock.lastWallMs) &&
     typeof value.rng === 'number' &&
@@ -373,7 +546,8 @@ export function isGameState(value: unknown): value is GameState {
     value.log.every(isLogLine) &&
     typeof value.nextLogId === 'number' &&
     Number.isInteger(value.nextLogId) &&
-    value.nextLogId >= 1
+    value.nextLogId >= 1 &&
+    isGuildLedger(value.ledger, value.clock.simMs, value.heroes)
   );
 }
 

@@ -29,6 +29,7 @@ describe('GameStore', () => {
   it('creates and saves a new game when there is no save', () => {
     const storage = new MemoryStorage();
     const expected = createNewGame({ seed: 456, wallMs: 123, guildName: '' });
+    expected.ledger.sessions = 1;
     const store = new GameStore({
       storage,
       now: () => 123,
@@ -102,20 +103,35 @@ describe('GameStore', () => {
 
     store.startNewGame();
 
-    expect(store.getState()).toEqual(
-      createNewGame({ seed: 99, wallMs: 1234, guildName: '' }),
-    );
+    const expected = createNewGame({ seed: 99, wallMs: 1234, guildName: '' });
+    expected.ledger.sessions = 1;
+    expect(store.getState()).toEqual(expected);
     expect(storage.getItem(SAVE_KEY)).not.toBeNull();
     store.destroy();
   });
 
-  it('loads a saved state without modifying it', () => {
+  it('starts sessions on load and after thirty idle minutes of actions', () => {
     const storage = new MemoryStorage();
     const game = createNewGame({ seed: 11, wallMs: 12, guildName: 'Test guild' });
     storage.setItem(SAVE_KEY, serialize(game, 13));
-    const store = new GameStore({ storage, now: () => 12, seed: () => 99 });
+    let now = 12;
+    const store = new GameStore({ storage, now: () => now, seed: () => 99 });
 
-    expect(store.getState()).toEqual(game);
+    expect(store.getState()?.ledger.sessions).toBe(1);
+    expect(store.getState()?.ledger.lastActiveWall).toBe(12);
+    store.dispatch((state) => ({ ...state, gold: state.gold + 1 }));
+    expect(store.getState()?.ledger.playDays).toEqual([
+      [
+        String(new Date(now).getFullYear()).padStart(4, '0'),
+        String(new Date(now).getMonth() + 1).padStart(2, '0'),
+        String(new Date(now).getDate()).padStart(2, '0'),
+      ].join('-'),
+    ]);
+
+    now += 30 * 60_000 + 1;
+    store.dispatch((state) => ({ ...state, gold: state.gold + 1 }));
+    expect(store.getState()?.ledger.sessions).toBe(2);
+    expect(store.getState()?.ledger.lastActiveWall).toBe(now);
     store.destroy();
   });
 

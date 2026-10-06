@@ -21,6 +21,7 @@ import { FoundGuildForm } from './ui/FoundGuildForm';
 import { AwaySummaryDialog } from './ui/AwaySummaryDialog';
 import { GatherBoard } from './ui/GatherBoard';
 import { LogPanel } from './ui/LogPanel';
+import { LedgerPanel } from './ui/LedgerPanel';
 import { QuestBoard } from './ui/QuestBoard';
 import { RecruitBoard } from './ui/RecruitBoard';
 import { RosterPanel } from './ui/RosterPanel';
@@ -230,6 +231,11 @@ export default function App() {
                 selectedChannel={logChannel}
               />
             ),
+          },
+          {
+            id: 'ledger',
+            label: 'Ledger',
+            panel: <LedgerPanel ledger={game.ledger} />,
           },
           {
             id: 'settings',

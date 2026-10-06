@@ -6,6 +6,7 @@ import { gatheringSystem } from './systems/gathering';
 import { questSystem } from './systems/quests';
 import { recruitmentSystem } from './systems/recruitment';
 import { recoverySystem } from './systems/recovery';
+import { foldLedgerEvents } from './systems/ledger';
 import { TICK_MS } from './tick';
 
 export { TICK_MS };
@@ -61,6 +62,8 @@ export function advance(
     for (const system of systems) system(nextState, tickMs, events);
   }
 
+  foldLedgerEvents(nextState.ledger, events, endSimMs);
+  nextState.ledger.totalSimMsPlayed += endSimMs - state.clock.simMs;
   nextState.clock.simMs = endSimMs;
   return { state: nextState, events };
 }

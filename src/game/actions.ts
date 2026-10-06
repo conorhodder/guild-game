@@ -62,6 +62,10 @@ export function foundGuild(name: string): (state: GameState, wallMs?: number) =>
       state.heroes[hero.id] = hero;
       state.heroOrder.push(hero.id);
     }
+    state.ledger.highestLevel = Math.max(
+      state.ledger.highestLevel,
+      ...state.heroOrder.map((heroId) => state.heroes[heroId]?.level ?? 0),
+    );
 
     for (const heroId of state.heroOrder) {
       const hero = state.heroes[heroId];
@@ -117,6 +121,7 @@ export function hire(candidateIndex: number): GameAction {
     }
     state.heroes[candidate.id] = candidate;
     state.heroOrder.push(candidate.id);
+    state.ledger.highestLevel = Math.max(state.ledger.highestLevel, candidate.level);
     state.recruitment.candidates = replaceRecruitmentCandidate(state, candidateIndex);
     appendLog(
       state,
@@ -307,7 +312,7 @@ export function getQuestEligibilityReason(state: GameState, heroId: string): str
 }
 
 export function dispatchQuest(questId: string, heroIds: string[]): GameAction {
-  return (currentState) => {
+  return (currentState, wallMs) => {
     const quest = questsById[questId];
     if (!quest) return { state: currentState, reason: 'Quest not found.' };
     if (heroIds.length < 1 || heroIds.length > 4) {
@@ -326,6 +331,8 @@ export function dispatchQuest(questId: string, heroIds: string[]): GameAction {
     const id = `a${state.nextId}`;
     state.nextId += 1;
     const startedAt = state.clock.simMs;
+    state.ledger.firstDispatchWall ??= wallMs;
+    state.ledger.firstDispatchAt ??= startedAt;
     const durationMs = quest.durationMin * 60_000;
     const activity = {
       kind: 'quest' as const,

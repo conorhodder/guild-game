@@ -3,6 +3,7 @@ import {
   createRecruitmentCandidates,
   RECRUITMENT_REFRESH_MS,
 } from './systems/recruitment';
+import { createGuildLedger } from './systems/ledger';
 
 export interface NewGameOptions {
   seed: number;
@@ -35,6 +36,7 @@ export function createNewGame({ seed, wallMs, guildName }: NewGameOptions): Game
       candidates: [],
       refreshAt: RECRUITMENT_REFRESH_MS,
     },
+    ledger: createGuildLedger(wallMs),
     log: [],
     nextLogId: 1,
   };

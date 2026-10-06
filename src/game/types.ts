@@ -40,6 +40,29 @@ export interface LogLine {
   highlight?: boolean;
 }
 
+export interface GuildLedger {
+  firstLoadWall: number;
+  firstDispatchWall: number | null;
+  firstDispatchAt: number | null;
+  firstQuestCompleteAt: number | null;
+  sessions: number;
+  lastActiveWall: number;
+  playDays: string[];
+  kills: number;
+  namedKills: number;
+  namedDrops: number;
+  highestLevel: number;
+  questsCompleted: number;
+  questsFailed: number;
+  goldEarned: number;
+  itemsByRarity: Record<Rarity, number>;
+  knockouts: number;
+  skillUps: number;
+  levelsGained: number;
+  totalSimMsPlayed: number;
+  namedMonstersSlainById: Record<string, number>;
+}
+
 export interface Hero {
   id: string;
   name: string;
@@ -111,6 +134,7 @@ export interface GameState {
     candidates: Hero[];
     refreshAt: number;
   };
+  ledger: GuildLedger;
   log: LogLine[];
   nextLogId: number;
 }
