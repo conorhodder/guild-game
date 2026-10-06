@@ -14,7 +14,15 @@ describe('RosterPanel', () => {
     );
     const selected = game.heroes[game.heroOrder[0] ?? ''];
 
-    render(<RosterPanel game={game} onEquip={vi.fn(() => null)} onUnequip={vi.fn(() => null)} />);
+    render(
+      <RosterPanel
+        game={game}
+        onEquip={vi.fn(() => null)}
+        onUnequip={vi.fn(() => null)}
+        onRest={vi.fn(() => null)}
+        onRecall={vi.fn(() => null)}
+      />,
+    );
 
     expect(screen.getByRole('heading', { name: 'Roster' })).toBeDefined();
     expect(screen.getByRole('heading', { name: `${selected?.glyph} ${selected?.name}` })).toBeDefined();
@@ -50,7 +58,15 @@ describe('RosterPanel', () => {
     game.stash[instance.uid] = instance;
     const onEquip = vi.fn(() => null);
 
-    render(<RosterPanel game={game} onEquip={onEquip} onUnequip={vi.fn(() => null)} />);
+    render(
+      <RosterPanel
+        game={game}
+        onEquip={onEquip}
+        onUnequip={vi.fn(() => null)}
+        onRest={vi.fn(() => null)}
+        onRecall={vi.fn(() => null)}
+      />,
+    );
     fireEvent.change(screen.getByRole('combobox', { name: 'Choose trinket' }), {
       target: { value: instance.uid },
     });
@@ -70,7 +86,15 @@ describe('RosterPanel', () => {
     if (!hero) throw new Error('Expected a starter hero.');
     hero.xp = 12.9;
 
-    render(<RosterPanel game={game} onEquip={vi.fn(() => null)} onUnequip={vi.fn(() => null)} />);
+    render(
+      <RosterPanel
+        game={game}
+        onEquip={vi.fn(() => null)}
+        onUnequip={vi.fn(() => null)}
+        onRest={vi.fn(() => null)}
+        onRecall={vi.fn(() => null)}
+      />,
+    );
 
     expect(screen.getByText('12 / 100 XP')).toBeDefined();
     expect(screen.getByRole('progressbar', { name: `${hero.name} experience` })).toHaveProperty(
@@ -87,11 +111,57 @@ describe('RosterPanel', () => {
     game.itemInstances[instance.uid] = instance;
     game.stash[instance.uid] = instance;
 
-    render(<RosterPanel game={game} onEquip={vi.fn(() => null)} onUnequip={vi.fn(() => null)} />);
+    render(
+      <RosterPanel
+        game={game}
+        onEquip={vi.fn(() => null)}
+        onUnequip={vi.fn(() => null)}
+        onRest={vi.fn(() => null)}
+        onRecall={vi.fn(() => null)}
+      />,
+    );
 
     const option = screen.getByRole('option', {
       name: 'Rusted Dagger — Not available to warrior.',
     }) as HTMLOptionElement;
     expect(option.disabled).toBe(true);
+  });
+
+  it('shows injury countdown and fatigue labels, with a Rest action', () => {
+    const game = foundGuild('The Wayfarers')(
+      createNewGame({ seed: 42, wallMs: 0, guildName: '' }),
+    );
+    const hero = game.heroes[game.heroOrder[0] ?? ''];
+    if (!hero) throw new Error('Expected a starter hero.');
+    hero.fatigue = 80;
+    hero.injuredUntil = 252_000;
+    const onRest = vi.fn(() => null);
+
+    render(
+      <RosterPanel
+        game={game}
+        onEquip={vi.fn(() => null)}
+        onUnequip={vi.fn(() => null)}
+        onRest={onRest}
+        onRecall={vi.fn(() => null)}
+      />,
+    );
+
+    expect(screen.getAllByText('Injured — 4m 12s').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('80 — Weary').length).toBeGreaterThan(0);
+
+    hero.injuredUntil = null;
+    cleanup();
+    render(
+      <RosterPanel
+        game={game}
+        onEquip={vi.fn(() => null)}
+        onUnequip={vi.fn(() => null)}
+        onRest={onRest}
+        onRecall={vi.fn(() => null)}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Rest' }));
+    expect(onRest).toHaveBeenCalledWith(hero.id);
   });
 });

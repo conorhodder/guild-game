@@ -3,6 +3,8 @@ import {
   dispatchQuest,
   equip,
   foundGuild,
+  recall,
+  rest,
   sell,
   sellMaterial,
   unequip,
@@ -95,6 +97,8 @@ export default function App() {
                 game={game}
                 onEquip={(heroId, uid) => gameStore.dispatch(equip(heroId, uid))}
                 onUnequip={(heroId, slot) => gameStore.dispatch(unequip(heroId, slot))}
+                onRest={(heroId) => gameStore.dispatch(rest(heroId))}
+                onRecall={(activityId) => gameStore.dispatch(recall(activityId))}
               />
             ),
           },

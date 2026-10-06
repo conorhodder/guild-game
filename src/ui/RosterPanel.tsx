@@ -27,6 +27,8 @@ interface RosterPanelProps {
   game: GameState;
   onEquip: (heroId: string, uid: string) => string | null;
   onUnequip: (heroId: string, slot: Slot) => string | null;
+  onRest: (heroId: string) => string | null;
+  onRecall: (activityId: string) => string | null;
 }
 
 function formatStat(value: number): string {
@@ -37,26 +39,48 @@ function signedDelta(value: number): string {
   return `${value >= 0 ? '+' : ''}${formatStat(value)}`;
 }
 
+function fatigueLabel(fatigue: number): string {
+  if (fatigue >= 100) return 'Exhausted';
+  if (fatigue > 75) return 'Weary';
+  return 'Rested';
+}
+
+function formatDuration(durationMs: number): string {
+  const totalSeconds = Math.ceil(Math.max(0, durationMs) / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}m ${seconds}s`;
+}
+
+function statusText(hero: Hero, game: GameState): string {
+  const status = heroStatus(hero, game);
+  if (status !== 'Injured') return status;
+  return `Injured — ${formatDuration((hero.injuredUntil ?? 0) - game.clock.simMs)}`;
+}
+
 function HeroSheet({
   game,
   hero,
   onEquip,
   onUnequip,
+  onRest,
+  onRecall,
 }: {
   game: GameState;
   hero: Hero;
   onEquip: RosterPanelProps['onEquip'];
   onUnequip: RosterPanelProps['onUnequip'];
+  onRest: RosterPanelProps['onRest'];
+  onRecall: RosterPanelProps['onRecall'];
 }) {
   const [selectedItems, setSelectedItems] = useState<Partial<Record<Slot, string>>>({});
   const [error, setError] = useState('');
   const status = heroStatus(hero, game);
+  const displayedStatus = statusText(hero, game);
   const stats = heroStats(hero, game);
   const xpRequired = xpToNext(hero.level);
   const displayedXp = Math.floor(hero.xp);
-  const health = hero.injuredUntil !== null && hero.injuredUntil > game.clock.simMs
-    ? 'Injured'
-    : 'Healthy';
+  const health = status === 'Injured' ? displayedStatus : 'Healthy';
   const stashItems = Object.values(game.stash).flatMap((instance) => {
     const item = itemsById[instance.itemId];
     return item && item.slot !== 'material' ? [{ instance, item }] : [];
@@ -100,7 +124,7 @@ function HeroSheet({
         </div>
         <div>
           <dt>Status</dt>
-          <dd>{status}</dd>
+          <dd>{displayedStatus}</dd>
         </div>
         <div>
           <dt>Health</dt>
@@ -108,7 +132,7 @@ function HeroSheet({
         </div>
         <div>
           <dt>Fatigue</dt>
-          <dd>{hero.fatigue}</dd>
+          <dd>{hero.fatigue} — {fatigueLabel(hero.fatigue)}</dd>
         </div>
         <div>
           <dt>Max HP</dt>
@@ -213,12 +237,28 @@ function HeroSheet({
           ))}
         </div>
       </section>
+      {status === 'Idle' && hero.fatigue > 0 && (
+        <button onClick={() => setError(onRest(hero.id) ?? '')} type="button">
+          Rest
+        </button>
+      )}
+      {status === 'Resting' && hero.activityId && (
+        <button onClick={() => setError(onRecall(hero.activityId ?? '') ?? '')} type="button">
+          Stop resting
+        </button>
+      )}
       {error && <p role="alert">{error}</p>}
     </article>
   );
 }
 
-export function RosterPanel({ game, onEquip, onUnequip }: RosterPanelProps) {
+export function RosterPanel({
+  game,
+  onEquip,
+  onUnequip,
+  onRest,
+  onRecall,
+}: RosterPanelProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const heroes = game.heroOrder.flatMap((id) => {
     const hero = game.heroes[id];
@@ -243,7 +283,9 @@ export function RosterPanel({ game, onEquip, onUnequip }: RosterPanelProps) {
                   type="button"
                 >
                   {hero.glyph} {hero.name} · {classes[hero.classId].name} · Level {hero.level}
-                  <span>{heroStatus(hero, game)} · Fatigue {hero.fatigue}</span>
+                  <span>
+                    {statusText(hero, game)} · Fatigue {hero.fatigue} — {fatigueLabel(hero.fatigue)}
+                  </span>
                 </button>
               </li>
             ))}
@@ -254,6 +296,8 @@ export function RosterPanel({ game, onEquip, onUnequip }: RosterPanelProps) {
               hero={selectedHero}
               onEquip={onEquip}
               onUnequip={onUnequip}
+              onRest={onRest}
+              onRecall={onRecall}
             />
           )}
         </div>

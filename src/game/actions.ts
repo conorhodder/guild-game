@@ -260,3 +260,51 @@ export function dispatchQuest(questId: string, heroIds: string[]): GameAction {
     return { state };
   };
 }
+
+export function rest(heroId: string): GameAction {
+  return (currentState) => {
+    const hero = currentState.heroes[heroId];
+    if (!hero) return { state: currentState, reason: 'Hero not found.' };
+    if (heroStatus(hero, currentState) !== 'Idle') {
+      return { state: currentState, reason: 'Hero must be Idle to rest.' };
+    }
+    if (hero.fatigue <= 0) {
+      return { state: currentState, reason: 'Hero is not fatigued.' };
+    }
+
+    const state = structuredClone(currentState);
+    const nextHero = state.heroes[heroId];
+    if (!nextHero) return { state: currentState, reason: 'Hero not found.' };
+    const id = `a${state.nextId}`;
+    state.nextId += 1;
+    state.activities[id] = {
+      kind: 'rest',
+      id,
+      heroId,
+      startedAt: state.clock.simMs,
+    };
+    nextHero.activityId = id;
+    appendLog(state, 'guild', 'system', `${nextHero.name} is resting.`);
+    return { state };
+  };
+}
+
+export function recall(activityId: string): GameAction {
+  return (currentState) => {
+    const activity = currentState.activities[activityId];
+    if (!activity) return { state: currentState, reason: 'Activity not found.' };
+    if (activity.kind !== 'rest') {
+      return { state: currentState, reason: 'That activity cannot be recalled yet.' };
+    }
+
+    const state = structuredClone(currentState);
+    const nextActivity = state.activities[activityId];
+    if (!nextActivity || nextActivity.kind !== 'rest') {
+      return { state: currentState, reason: 'Activity not found.' };
+    }
+    const hero = state.heroes[nextActivity.heroId];
+    if (hero?.activityId === activityId) hero.activityId = null;
+    delete state.activities[activityId];
+    return { state };
+  };
+}

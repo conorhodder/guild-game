@@ -1,5 +1,7 @@
 import type { GameState, LogLine } from './types';
+import { fatigueSystem } from './systems/fatigue';
 import { questSystem } from './systems/quests';
+import { recoverySystem } from './systems/recovery';
 import { TICK_MS } from './tick';
 
 export { TICK_MS };
@@ -9,7 +11,7 @@ export type SimSystem = (state: GameState, tickMs: number, events: SimEvent[]) =
 
 // Keep this order stable as systems are added:
 // quests, camps, gathering, rest/fatigue, recovery, recruitment.
-export const defaultSystems: SimSystem[] = [questSystem];
+export const defaultSystems: SimSystem[] = [questSystem, fatigueSystem, recoverySystem];
 
 export function advance(
   state: GameState,
